@@ -1,0 +1,74 @@
+/* ------------------------------------------------------------------
+   Swish design system — ported 1:1 from the Figma file.
+   Colours sampled off a 60fps screen recording of the real app.
+   Type/space/radius are the raw Figma canvas values; --s scales the
+   592px design canvas down to a real device width. One number.
+   ------------------------------------------------------------------ */
+
+:root {
+  --s: 0.73;                 /* 592 * 0.73 = 432px frame ≈ iPhone 14 Plus */
+  --font: "DM Sans", system-ui, -apple-system, sans-serif;
+
+  /* brand — #2DB955 is the measured green; 700 is an AA-safe tint of the
+     same 137° hue, because white on #2DB955 is only 2.6:1 */
+  --brand-900: #0b4a20;
+  --brand-700: #178039;
+  --brand-500: #2db955;
+  --brand-100: #e1f7e3;
+  --brand-050: #eefcf2;
+
+  --text-primary: #16181a;
+  --text-secondary: #4a4f54;
+  --text-tertiary: #6e747a;
+  --text-on-brand: #ffffff;
+
+  --surface-base: #fdfdfd;   /* measured — not pure white */
+  --surface-alt: #f3f5f6;
+  --surface-sunken: #eaedef;
+  --border-subtle: #e4e7e9;
+  --border-default: #d6dadd;
+
+  --warn-bg: #fdf1c8;
+  --warn-fg: #7a5200;
+  --danger: #b3261e;
+
+  /* motion — frame-differenced off the recording.
+     Swish does not bounce: ease-out, no overshoot, no spring. */
+  --ease-swish: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-nav: 150ms;
+  --dur-sheet: 200ms;
+  --dur-screen: 300ms;
+
+  /* spacing — 6px base on the design canvas */
+  --sp-1: calc(6px * var(--s));
+  --sp-2: calc(12px * var(--s));
+  --sp-3: calc(18px * var(--s));
+  --sp-4: calc(24px * var(--s));
+  --sp-5: calc(30px * var(--s));
+  --sp-6: calc(36px * var(--s));
+  --sp-8: calc(48px * var(--s));
+  --sp-10: calc(60px * var(--s));
+
+  --r-sm: calc(6px * var(--s));
+  --r-md: calc(12px * var(--s));
+  --r-lg: calc(18px * var(--s));
+  --r-xl: calc(24px * var(--s));
+  --r-2xl: calc(36px * var(--s));
+  --r-full: 999px;
+
+  --phone-w: calc(592px * var(--s));
+  --phone-h: calc(1052px * var(--s));
+}
+
+/* ---- type ramp: 11 steps, weight always carried by the style ---- */
+.t-display { font: 700 calc(42px * var(--s)) / calc(48px * var(--s)) var(--font); letter-spacing: -0.02em; }
+.t-h1      { font: 700 calc(33px * var(--s)) / calc(39px * var(--s)) var(--font); letter-spacing: -0.015em; }
+.t-h2      { font: 700 calc(27px * var(--s)) / calc(33px * var(--s)) var(--font); letter-spacing: -0.01em; }
+.t-h3      { font: 700 calc(24px * var(--s)) / calc(30px * var(--s)) var(--font); letter-spacing: -0.01em; }
+.t-title   { font: 700 calc(21px * var(--s)) / calc(27px * var(--s)) var(--font); letter-spacing: -0.005em; }
+.t-subtitle{ font: 400 calc(21px * var(--s)) / calc(28px * var(--s)) var(--font); }
+.t-body    { font: 400 calc(18px * var(--s)) / calc(25px * var(--s)) var(--font); }
+.t-label   { font: 500 calc(18px * var(--s)) / calc(24px * var(--s)) var(--font); }
+.t-caption { font: 400 calc(15px * var(--s)) / calc(20px * var(--s)) var(--font); }
+.t-caption-strong { font: 500 calc(15px * var(--s)) / calc(20px * var(--s)) var(--font); }
+.t-micro   { font: 500 calc(12px * var(--s)) / calc(16px * var(--s)) var(--font); letter-spacing: 0.03em; }
