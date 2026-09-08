@@ -45,15 +45,11 @@ export default function App() {
   return (
     <main className="page">
       <header className="wrap">
-        <p className="eyebrow">Swish · unsolicited</p>
         <blockquote className="review">
           “I got a call saying the kachori I ordered wasn’t available.”
-          <cite>App Store review, 13 July</cite>
+          <cite>Swish · App Store review, 13 July</cite>
         </blockquote>
-        <h1 className="hero-line">
-          When the kitchen runs out mid-order, Swish phones you.<br />
-          <span>Here’s the version that doesn’t.</span>
-        </h1>
+        <h1 className="hero-line">Here’s the version that doesn’t.</h1>
       </header>
 
       <section className="journey">
