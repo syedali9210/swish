@@ -8,14 +8,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.page {
-  min-height: 100%;
+.stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--sp-4);
-  padding: var(--sp-6) var(--sp-4);
+  gap: var(--sp-3);
 }
 
 /* ---------------- device ---------------- */
@@ -177,6 +174,10 @@ body {
   cursor: pointer; font-family: var(--font);
 }
 .option.selected { background: var(--brand-050); border: 2px solid var(--brand-700); }
+/* mirrors Swish's own out-of-stock treatment on "Best Paired With" —
+   greyed with a dead control, rather than hidden */
+.option.disabled { opacity: 0.45; cursor: not-allowed; background: var(--surface-alt); }
+.option.disabled .radio { border-style: dashed; }
 .option .thumb { width: calc(68px * var(--s)); height: calc(68px * var(--s)); border-radius: var(--r-md); object-fit: cover; flex: 0 0 auto; background: var(--surface-sunken); }
 .option .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(4px * var(--s)); }
 .option .meta { color: var(--text-secondary); }
@@ -289,8 +290,6 @@ body {
 }
 
 /* ---------------- page chrome (not part of the app) ---------------- */
-.caption-strip { max-width: calc(592px * var(--s)); text-align: center; color: var(--docs-text-muted); }
-.caption-strip b { color: var(--docs-text); }
 .replay {
   border: 1px solid var(--docs-border); background: var(--docs-surface); color: var(--docs-text);
   border-radius: 999px; padding: 9px 18px; cursor: pointer;

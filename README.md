@@ -1,13 +1,23 @@
 # Swish — when the kitchen runs out
 
-A working prototype of the one moment where Swish hands a paying customer to a phone call.
+A case study page and working prototype of the one moment where Swish hands a paying customer to
+a phone call.
 
-From a July App Store review: order placed, payment taken, then a call — the kachori isn't
-available. The customer agrees to batata vada. Fifteen minutes later, another call, that's gone
-too. A third call, the sandwich as well.
+Two App Store reviews, a month apart, describing the same gap:
+
+> **13 July** — "About 10 minutes after placing my order, I got a call saying the kachori I ordered
+> wasn't available." … "Another 15 minutes later, I received another call saying batata vada was
+> also unavailable." … "only to be told the sandwich wasn't available either."
+
+> **11 August** — "I ordered for two different dishes but they called and said no availability so
+> ended up giving me the same item twice."
 
 Swish **has** designed unavailability — at browse time, where an out-of-stock item is greyed out
 with a disabled checkbox. The gap is *after* payment, mid-cook. This is that surface.
+
+Checked against the App Store version history through 2.1.3 (1 Sept): no substitution feature has
+shipped. Worth re-checking before sending — this team names features in release notes, so it would
+be obvious.
 
 ```bash
 npm install
@@ -46,6 +56,14 @@ Everything else follows from that:
   users, not to rush active ones.
 - **Swaps promise "same 9 minutes."** Only a company that owns its kitchens can say that.
   Blinkit's warehouse marks stock zero and moves on; Swish runs out mid-service.
+- **It survives happening twice.** The July reviewer was called three times — the substitute they
+  agreed to also ran out. A design that only handles one failure doesn't answer the review it
+  cites. So when the swap runs out too, the kitchen stops deciding: no countdown, no third guess,
+  and refund becomes the primary action. It gets to be confident exactly once.
+- **It never offers something already in the order.** The August reviewer was talked into a
+  duplicate over the phone. Bhel Puri is already in that bag, so it appears in the list greyed out
+  with a dead control — reusing Swish's own out-of-stock treatment rather than hiding it, so the
+  customer can see the system knows.
 - **"Just drop it and refund" is always one tap and never buried.** The review's whole problem
   was three calls to reach an outcome the customer would have picked in four seconds.
 - **Kitchen voice.** "The Peri Peri Corn just ran out," never "We regret to inform you."

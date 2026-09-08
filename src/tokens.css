@@ -6,7 +6,7 @@
    ------------------------------------------------------------------ */
 
 :root {
-  --s: 0.73;                 /* 592 * 0.73 = 432px frame ≈ iPhone 14 Plus */
+  --s: 0.62;                 /* the one number: scales the 592px design canvas to the page */
   --font: "DM Sans", system-ui, -apple-system, sans-serif;
 
   /* brand — #2DB955 is the measured green; 700 is an AA-safe tint of the
@@ -72,11 +72,9 @@
   --device-h: calc(1325px * var(--s));
 }
 
-/* keep the whole device on screen without scrolling on shorter displays */
-@media (max-height: 1040px) { :root { --s: 0.62; } }
-@media (max-height: 900px)  { :root { --s: 0.54; } }
-@media (max-height: 800px)  { :root { --s: 0.48; } }
-@media (max-height: 740px)  { :root { --s: 0.43; } }
+/* the device sits inside a scrolling page, so it scales to width, not viewport height */
+@media (max-width: 560px) { :root { --s: 0.52; } }
+@media (max-width: 400px) { :root { --s: 0.44; } }
 
 /* ---- type ramp: 11 steps, weight always carried by the style ---- */
 .t-display { font: 700 calc(42px * var(--s)) / calc(48px * var(--s)) var(--font); letter-spacing: -0.02em; }
