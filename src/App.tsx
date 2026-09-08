@@ -47,8 +47,7 @@ export default function App() {
       <header className="wrap">
         <p className="eyebrow">Swish · unsolicited</p>
         <blockquote className="review">
-          “I got a call saying the kachori I ordered wasn’t available.” … “another call saying batata
-          vada was also unavailable.” … “only to be told the sandwich wasn’t available either.”
+          “I got a call saying the kachori I ordered wasn’t available.”
           <cite>App Store review, 13 July</cite>
         </blockquote>
         <h1 className="hero-line">
@@ -76,20 +75,16 @@ export default function App() {
         </div>
       </section>
 
-      <section className="wrap outro">
-        <h2>What I’d get wrong</h2>
+      <footer className="wrap footnote">
         <p>
-          I’m outside your delivery radius, so this is one screen recording rather than fifteen real
-          orders, and I’ve never seen your live order screen — everything behind the sheet is inferred.
-          Forty seconds is a guess; your data would set it. The palette and timings aren’t guesses,
-          though: both measured off the recording, ease-out, no overshoot. And it adds no new surface
-          area — one sheet, on a screen that already exists.
+          Outside your delivery radius, so this is one screen recording, not fifteen orders.
+          Forty seconds is a guess — your data would set it.
         </p>
-        {/* TODO(syed): your line, your links */}
+        {/* TODO(syed): your links */}
         <div className="who">
           <a href="https://github.com/syedali9210/swish" target="_blank" rel="noreferrer">Source on GitHub</a>
         </div>
-      </section>
+      </footer>
 
       {egg && (
         <motion.p className="egg"
