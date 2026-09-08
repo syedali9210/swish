@@ -14,6 +14,18 @@ npm install
 npm run dev
 ```
 
+## Flow
+
+1. Order placed, tracking screen.
+2. The phone goes idle. The kitchen runs out mid-cook and the notification lands on the lock screen.
+3. Tap it — the app opens straight onto the swap already in progress, 40 seconds to override.
+4. Keep it, pick something else, or drop it and refund.
+5. Resolved, with the ETA untouched.
+
+Everything renders inside an iPhone 14 Plus frame — 592×1281 at the design canvas scale, with the
+Dynamic Island and home indicator — because that is the device the source footage was shot on. The
+home indicator flips light on the lock screen and dark in the app, the way iOS does it.
+
 ## The call this makes
 
 **The kitchen decides, it doesn't ask.** It has already started the closest swap and gives you
@@ -22,6 +34,10 @@ a question costs more than a reversible wrong guess.
 
 Everything else follows from that:
 
+- **The notification carries the whole decision.** It has to survive being the only thing someone
+  reads: what ran out, what the kitchen already did, that the 9 minutes still holds, and what
+  tapping gets you. If they never open the app, they have still been told everything that matters.
+  Tapping opens straight onto the swap in progress — no home screen, no menu, no hunting.
 - **The clock ribbon never moves.** Swish's failure mode is the promise breaking, so the fix is
   proving it didn't. It's their own home/cart ETA component, reused on a screen they haven't
   built. On resolve it flashes once, just to make you look at it.

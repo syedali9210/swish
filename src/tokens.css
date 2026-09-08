@@ -56,9 +56,19 @@
   --r-2xl: calc(36px * var(--s));
   --r-full: 999px;
 
+  /* 592 x 1281 is the iPhone 14 Plus ratio — the device the source footage came from */
   --phone-w: calc(592px * var(--s));
-  --phone-h: calc(1052px * var(--s));
+  --phone-h: calc(1281px * var(--s));
+  --bezel: calc(22px * var(--s));
+  --device-w: calc(636px * var(--s));
+  --device-h: calc(1325px * var(--s));
 }
+
+/* keep the whole device on screen without scrolling on shorter displays */
+@media (max-height: 1040px) { :root { --s: 0.62; } }
+@media (max-height: 900px)  { :root { --s: 0.54; } }
+@media (max-height: 800px)  { :root { --s: 0.48; } }
+@media (max-height: 740px)  { :root { --s: 0.43; } }
 
 /* ---- type ramp: 11 steps, weight always carried by the style ---- */
 .t-display { font: 700 calc(42px * var(--s)) / calc(48px * var(--s)) var(--font); letter-spacing: -0.02em; }

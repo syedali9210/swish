@@ -19,6 +19,36 @@ body {
 }
 
 /* ---------------- device ---------------- */
+.device {
+  position: relative;
+  width: var(--device-w);
+  height: var(--device-h);
+  padding: var(--bezel);
+  border-radius: calc(74px * var(--s));
+  background: #050807;
+  box-shadow: 0 calc(26px * var(--s)) calc(70px * var(--s)) rgba(8, 23, 13, 0.34),
+              inset 0 0 0 2px #333a36;
+  isolation: isolate;
+}
+.island {
+  position: absolute; z-index: 20;
+  top: calc(var(--bezel) + 16px * var(--s));
+  left: 50%; transform: translateX(-50%);
+  width: calc(126px * var(--s)); height: calc(36px * var(--s));
+  border-radius: var(--r-full);
+  background: #050807;
+}
+.home-indicator {
+  position: absolute; z-index: 20;
+  bottom: calc(var(--bezel) + 18px * var(--s));
+  left: 50%; transform: translateX(-50%);
+  width: calc(200px * var(--s)); height: calc(8px * var(--s));
+  border-radius: var(--r-full);
+  background: rgba(23, 26, 26, 0.85);
+  transition: background var(--dur-screen) var(--ease-swish);
+}
+.device.on-dark .home-indicator { background: rgba(255, 255, 255, 0.9); }
+
 .phone {
   position: relative;
   width: var(--phone-w);
@@ -26,8 +56,6 @@ body {
   border-radius: calc(52px * var(--s));
   overflow: hidden;
   background: var(--surface-base);
-  box-shadow: 0 calc(30px * var(--s)) calc(80px * var(--s)) rgba(16, 32, 22, 0.28),
-              0 0 0 1px rgba(0, 0, 0, 0.06);
   isolation: isolate;
 }
 .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
@@ -208,6 +236,53 @@ body {
 }
 .sparkle { color: var(--brand-700); }
 
+/* ---------------- lock screen + notification ---------------- */
+.lock {
+  position: absolute; inset: 0; z-index: 15;
+  background: linear-gradient(163deg, #0b2e19 0%, #05160d 55%, #020906 100%);
+  color: #fff;
+  display: flex; flex-direction: column; align-items: center;
+  padding: calc(30px * var(--s)) calc(30px * var(--s)) calc(89px * var(--s));
+  transform-origin: 50% 45%;
+}
+.lock-status { align-self: flex-end; display: flex; align-items: center; gap: calc(5px * var(--s)); }
+.lock-date { opacity: 0.72; margin-top: calc(82px * var(--s)); }
+.lock-clock {
+  font: 700 calc(150px * var(--s)) / calc(158px * var(--s)) var(--font);
+  letter-spacing: -0.03em; margin-top: calc(12px * var(--s));
+}
+
+.notif {
+  width: 100%; margin-top: calc(230px * var(--s));
+  text-align: left; cursor: pointer; font-family: var(--font);
+  background: rgba(255, 255, 255, 0.93);
+  backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+  border: none; border-radius: var(--r-xl);
+  padding: calc(20px * var(--s)) calc(22px * var(--s)) calc(22px * var(--s));
+  display: flex; flex-direction: column; gap: calc(10px * var(--s));
+  box-shadow: 0 calc(8px * var(--s)) calc(28px * var(--s)) rgba(0, 0, 0, 0.22);
+}
+.notif:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.notif-top { display: flex; align-items: center; gap: calc(12px * var(--s)); }
+.notif-icon {
+  width: calc(44px * var(--s)); height: calc(44px * var(--s));
+  border-radius: calc(13px * var(--s));
+  background: var(--brand-500); color: #fff;
+  display: grid; place-items: center; flex: 0 0 auto;
+  font: 700 calc(24px * var(--s)) / 1 var(--font);
+}
+.notif .name { color: var(--text-secondary); flex: 1; text-transform: uppercase; }
+.notif .when { color: var(--text-tertiary); }
+.notif-title { color: var(--text-primary); }
+.notif-body { color: var(--text-secondary); }
+
+.lock-controls { margin-top: auto; width: 100%; display: flex; justify-content: space-between; }
+.lock-ctl {
+  width: calc(84px * var(--s)); height: calc(84px * var(--s));
+  border-radius: var(--r-full); background: rgba(255, 255, 255, 0.16);
+  display: grid; place-items: center; font-size: calc(30px * var(--s));
+}
+
 /* ---------------- page chrome (not part of the app) ---------------- */
 .caption-strip { max-width: calc(592px * var(--s)); text-align: center; color: #5a6169; }
 .caption-strip b { color: #23282d; }
@@ -217,6 +292,11 @@ body {
   font: 500 13px/1 var(--font);
 }
 .replay:hover { background: #f6f8f9; }
+
+/* tighten the page chrome so the whole device still fits on short displays */
+@media (max-height: 900px) {
+  .page { padding: var(--sp-3) var(--sp-3); gap: var(--sp-2); }
+}
 
 /* The countdown bar is information, not decoration, so it keeps its duration. */
 @media (prefers-reduced-motion: reduce) {
