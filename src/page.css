@@ -1,101 +1,105 @@
 /* The wrapper. Deliberately not built on the Swish type ramp — the mockup is
-   their voice, this page is mine. Separate scales keep the two from blurring. */
+   their voice, this page is mine. The reasoning lives beside the phone and
+   changes as you move through the flow, rather than arriving as an essay. */
 
-.wrap {
+.page {
   --ink: var(--docs-text);
   --muted: var(--docs-text-muted);
   --line: var(--docs-border);
   --card: var(--docs-surface);
   --accent: var(--brand-500);
-  max-width: 760px;
-  margin: 0 auto;
-  padding: clamp(48px, 9vw, 120px) 24px clamp(64px, 8vw, 110px);
   font-family: var(--font);
+  padding: clamp(40px, 7vw, 84px) 24px clamp(48px, 7vw, 88px);
 }
 
+.wrap { max-width: 660px; margin: 0 auto; }
+
 .eyebrow {
+  margin: 0;
   font: 500 12px/1 var(--font);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.hero-line {
-  margin: 28px 0 0;
-  font: 700 clamp(28px, 4.6vw, 46px) / 1.12 var(--font);
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  text-wrap: balance;
-}
-
 blockquote.review {
-  margin: 34px 0 0;
-  padding: 0 0 0 22px;
+  margin: 26px 0 0;
+  padding: 0 0 0 20px;
   border-left: 2px solid var(--accent);
   color: var(--ink);
-  font: 400 clamp(18px, 2.4vw, 23px) / 1.5 var(--font);
+  font: 400 clamp(16px, 2vw, 19px) / 1.55 var(--font);
   letter-spacing: -0.01em;
 }
-blockquote.review + blockquote.review { margin-top: 22px; }
 blockquote.review cite {
   display: block;
-  margin-top: 12px;
-  font: 500 13px/1.5 var(--font);
+  margin-top: 10px;
+  font: 500 12.5px/1.5 var(--font);
   font-style: normal;
   color: var(--muted);
 }
 
-/* Direct-child selectors on purpose: the prototype is nested inside .wrap, and
-   bare element rules would inherit straight into the device. */
-.wrap > p { color: var(--muted); font: 400 17px/1.7 var(--font); }
-.wrap > p strong { color: var(--ink); font-weight: 500; }
-.lead { font-size: 19px !important; color: var(--ink) !important; }
+.hero-line {
+  margin: 30px 0 0;
+  font: 700 clamp(25px, 3.8vw, 38px) / 1.15 var(--font);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.hero-line span { color: var(--accent); }
 
-.rule { height: 1px; background: var(--line); border: 0; margin: clamp(48px, 7vw, 84px) 0; }
+/* ---------------- the journey ---------------- */
+.journey {
+  margin: clamp(40px, 6vw, 72px) auto 0;
+  display: grid;
+  /* hug the device rather than letting the column float in dead space */
+  grid-template-columns: max-content minmax(250px, 330px);
+  justify-content: center;
+  gap: clamp(28px, 4vw, 60px);
+  align-items: start;
+}
+@media (max-width: 920px) {
+  .journey { grid-template-columns: 1fr; justify-items: center; gap: 28px; }
+  .rail { max-width: 460px; position: static; }
+}
 
-.wrap > h2 {
-  margin: 0 0 6px;
-  font: 700 clamp(21px, 2.6vw, 27px) / 1.25 var(--font);
+/* the device is tall, so the note follows you down it */
+.rail { min-height: 210px; display: flex; align-items: center; position: sticky; top: 24vh; }
+.rail-inner { border-left: 2px solid var(--accent); padding-left: 20px; }
+.rail-step {
+  margin: 0 0 10px;
+  font: 500 11.5px/1 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.rail-title {
+  margin: 0 0 10px;
+  font: 700 clamp(19px, 2.2vw, 23px) / 1.25 var(--font);
   letter-spacing: -0.02em;
   color: var(--ink);
+  text-wrap: balance;
 }
-.section-note { margin: 0 0 26px !important; }
+.rail-body { margin: 0; color: var(--muted); font: 400 15.5px/1.65 var(--font); }
 
-/* decisions */
-.decisions { list-style: none; margin: 0; padding: 0; }
-.decisions li {
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 14px;
-  padding: 18px 0;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font: 400 16px/1.65 var(--font);
+.progress { display: flex; gap: 6px; margin-top: 22px; }
+.progress i {
+  width: 22px; height: 3px; border-radius: 2px;
+  background: var(--line); transition: background 260ms var(--ease-swish);
 }
-.decisions li:last-child { border-bottom: 1px solid var(--line); }
-.decisions .n { color: var(--accent); font: 500 13px/1.9 var(--font); font-variant-numeric: tabular-nums; }
-.decisions b { color: var(--ink); font-weight: 600; }
+.progress i.on { background: var(--accent); }
 
-/* exhibit */
-.exhibit {
-  margin: clamp(40px, 6vw, 72px) 0 clamp(28px, 4vw, 44px);
-  padding: clamp(28px, 5vw, 56px) 16px;
-  border-radius: 28px;
-  border: 1px solid var(--line);
-  background: radial-gradient(120% 80% at 50% 0%, #12211a 0%, #0d100e 70%);
-  display: flex;
-  justify-content: center;
+/* ---------------- close ---------------- */
+.outro { margin-top: clamp(48px, 7vw, 84px); }
+.outro h2 {
+  margin: 0 0 8px;
+  font: 700 17px/1.3 var(--font);
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
-.exhibit-cap {
-  margin: 0 auto;
-  max-width: 460px;
-  text-align: center;
-  color: var(--muted);
-  font: 400 14px/1.6 var(--font);
-}
+.outro p { margin: 0; color: var(--muted); font: 400 15px/1.7 var(--font); }
+.outro p + p { margin-top: 12px; }
 
-/* footer */
-.who { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.who { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .who a {
   color: var(--ink);
   text-decoration: none;
@@ -103,17 +107,17 @@ blockquote.review cite {
   background: var(--card);
   border-radius: 999px;
   padding: 9px 16px;
-  font: 500 14px/1 var(--font);
+  font: 500 13.5px/1 var(--font);
 }
 .who a:hover { border-color: var(--accent); color: var(--accent); }
 .who a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* the ten-minute egg — ten minutes is their unit, so it only lands for
-   someone who actually stayed */
+/* ten minutes is their unit, so the egg only lands for someone who actually stayed */
 .egg {
-  margin-top: clamp(48px, 7vw, 80px);
+  margin: clamp(40px, 6vw, 64px) auto 0;
+  max-width: 660px;
   text-align: center;
   color: var(--muted);
-  font: 400 14px/1.6 var(--font);
+  font: 400 13.5px/1.6 var(--font);
   font-style: italic;
 }

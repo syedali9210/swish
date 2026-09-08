@@ -13,6 +13,10 @@ type Item = { id: string; name: string; meta: string; price: number; thumb: stri
 type Phase = "tracking" | "locked" | "alert" | "override";
 type Resolution = { kind: "swap"; item: Item; secs: number } | { kind: "refund" } | null;
 
+/* The page reads this to show the reasoning for wherever you are in the flow,
+   rather than dumping all of it up front. */
+export type Stage = "tracking" | "locked" | "alert1" | "override1" | "resolved1" | "alert2" | "resolved2";
+
 const BUTTER_CORN: Item = { id: "butter-corn", name: "Butter Corn", meta: "Serves 1 · closest match", price: 139, thumb: "/food/butter-corn.jpg" };
 const BHEL_PURI: Item = { id: "bhel-puri", name: "Bhel Puri", meta: "Serves 1 · Bestseller", price: 119, thumb: "/food/bhel-puri.jpg" };
 const WEDGES: Item = { id: "potato-wedges", name: "Peri Peri Potato Wedges", meta: "Serves 1 · Crispy", price: 149, thumb: "/food/potato-wedges.jpg" };
@@ -148,7 +152,7 @@ function LockScreen({ onOpen, T, reduce }: { onOpen: () => void; T: (d: number, 
   );
 }
 
-export default function Prototype() {
+export default function Prototype({ onStage }: { onStage?: (s: Stage) => void }) {
   const reduce = useReducedMotion();
   const T = (d: number, delay = 0) => ({ duration: reduce ? 0 : d, ease: EASE, delay: reduce ? 0 : delay });
 
@@ -188,6 +192,16 @@ export default function Prototype() {
 
   const sheetOpen = phase === "alert" || phase === "override";
   const candidates = [BUTTER_CORN, BHEL_PURI, WEDGES];
+
+  const stage: Stage =
+    phase === "locked" ? "locked"
+      : phase === "override" ? "override1"
+      : phase === "alert" ? (round === 1 ? "alert1" : "alert2")
+      : resolution ? (round === 1 ? "resolved1" : "resolved2")
+      : "tracking";
+  const emit = useRef(onStage);
+  emit.current = onStage;
+  useEffect(() => { emit.current?.(stage); }, [stage]);
 
   return (
     <div className="stage">
