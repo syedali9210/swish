@@ -2,8 +2,8 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  background: #eef0f2;
-  color: var(--text-primary);
+  background: var(--docs-bg);
+  color: var(--docs-text);
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
 }
@@ -26,7 +26,9 @@ body {
   padding: var(--bezel);
   border-radius: calc(74px * var(--s));
   background: #050807;
-  box-shadow: 0 calc(26px * var(--s)) calc(70px * var(--s)) rgba(8, 23, 13, 0.34),
+  /* a dark drop shadow does nothing on black, so a hairline ring separates the device */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07),
+              0 calc(26px * var(--s)) calc(70px * var(--s)) rgba(0, 0, 0, 0.65),
               inset 0 0 0 2px #333a36;
   isolation: isolate;
 }
@@ -284,14 +286,15 @@ body {
 }
 
 /* ---------------- page chrome (not part of the app) ---------------- */
-.caption-strip { max-width: calc(592px * var(--s)); text-align: center; color: #5a6169; }
-.caption-strip b { color: #23282d; }
+.caption-strip { max-width: calc(592px * var(--s)); text-align: center; color: var(--docs-text-muted); }
+.caption-strip b { color: var(--docs-text); }
 .replay {
-  border: 1px solid #cfd5d9; background: #fff; color: #23282d;
+  border: 1px solid var(--docs-border); background: var(--docs-surface); color: var(--docs-text);
   border-radius: 999px; padding: 9px 18px; cursor: pointer;
   font: 500 13px/1 var(--font);
 }
-.replay:hover { background: #f6f8f9; }
+.replay:hover { background: #1e2320; }
+.replay:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }
 
 /* tighten the page chrome so the whole device still fits on short displays */
 @media (max-height: 900px) {

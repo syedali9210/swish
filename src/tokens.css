@@ -32,6 +32,14 @@
   --warn-fg: #7a5200;
   --danger: #b3261e;
 
+  /* page chrome around the device — deliberately separate from the app palette,
+     mirrors the docs/* group in the Figma file so both surfaces match */
+  --docs-bg: #0b0d0c;
+  --docs-surface: #161a18;
+  --docs-text: #f2f5f3;
+  --docs-text-muted: #9ba5a0;
+  --docs-border: #262c29;
+
   /* motion — frame-differenced off the recording.
      Swish does not bounce: ease-out, no overshoot, no spring. */
   --ease-swish: cubic-bezier(0.16, 1, 0.3, 1);
