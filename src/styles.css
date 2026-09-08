@@ -59,6 +59,9 @@ body {
   overflow: hidden;
   background: var(--surface-base);
   isolation: isolate;
+  /* The device is its own colour context. Without this, anything that doesn't set
+     its own colour inherits the page chrome — which is near-white on black. */
+  color: var(--text-primary);
 }
 .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
 
