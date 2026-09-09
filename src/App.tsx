@@ -22,7 +22,7 @@ const NOTES: Partial<Record<Stage, string>> = {
   locked: "The upgrade lands before they’ve even unlocked the phone.",
   alert: "Good news first, cause in the next breath. Never the other way round.",
   override: "Always in the kitchen, so it can’t run out on you twice.",
-  resolved: "Better dish, money back, clock untouched. All three, in four seconds.",
+  resolved: "Better dish, money back, clock untouched — and no one had to call.",
   dropped: "Refund stated up front — and the call is theirs to ask for, not ours to make.",
 };
 

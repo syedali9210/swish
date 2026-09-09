@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import "./tokens.css";
 import "./styles.css";
 
@@ -60,7 +60,7 @@ const Ribbon = () => (
     <span className="bolt" aria-hidden>ϟ</span>
     <div>
       <div className="val t-h3">9 minutes</div>
-      <div className="sub t-caption">Still on time. None of this cost you a minute.</div>
+      <div className="sub t-caption">Not a second added.</div>
     </div>
   </div>
 );
@@ -100,32 +100,31 @@ function OptionRow({ item, selected, disabled, onPick }: { item: Item; selected?
   );
 }
 
-/* Owns its own ticking state so the sheet above it never re-renders. It also
-   stops the moment its body starts leaving — setting state on an exiting
-   AnimatePresence child restarts the exit, which deadlocks mode="wait". */
+/* Writes the seconds straight to the DOM and never calls setState. Any render
+   triggered from inside an exiting AnimatePresence child restarts its exit
+   animation, so the exit never completes and mode="wait" deadlocks — the next
+   body never mounts. No state here means that cannot happen at all. */
 function Countdown({ from, liveRef, onExpire }: { from: number; liveRef: React.RefObject<number>; onExpire: () => void }) {
-  const [left, setLeft] = useState(from);
+  const numRef = useRef<HTMLSpanElement>(null);
   const expire = useRef(onExpire);
   expire.current = onExpire;
-  const present = useIsPresent();
 
   useEffect(() => {
-    if (!present) return;
     const start = performance.now();
     const id = setInterval(() => {
       const l = Math.max(0, from - (performance.now() - start) / 1000);
       liveRef.current = l;
-      setLeft(l);
+      if (numRef.current) numRef.current.textContent = `${Math.ceil(l)}s`;
       if (l <= 0) { clearInterval(id); expire.current(); }
     }, 250);
     return () => clearInterval(id);
-  }, [from, liveRef, present]);
+  }, [from, liveRef]);
 
   return (
     <div className="countdown">
       <div className="row">
-        <span className="lbl t-caption">Locking this in</span>
-        <span className="num t-caption-strong" aria-live="polite">{Math.ceil(left)}s</span>
+        <span className="lbl t-caption">Confirming in</span>
+        <span className="num t-caption-strong" aria-live="polite" ref={numRef}>{Math.ceil(from)}s</span>
       </div>
       <div className="track">
         <div className="fill" style={{ "--from": `${(from / OVERRIDE_WINDOW) * 100}%`, animationDuration: `${from}s` } as React.CSSProperties} />
@@ -150,14 +149,16 @@ function LockScreen({ onOpen, T, reduce }: { onOpen: () => void; T: (d: number, 
         transition={T(D.screen, 0.35)}
       >
         <span className="notif-top">
-          <span className="notif-icon" aria-hidden>ϟ</span>
+          {/* their real app icon: green square, white four-point sparkle */}
+          <span className="notif-icon" aria-hidden>✦</span>
           <span className="name t-micro">Swish</span>
           <span className="when t-caption">now</span>
         </span>
+        {/* front-loaded: iOS truncates this to about two lines */}
         <span className="notif-title t-title">You’ve been upgraded to {BUTTER_CORN.name}</span>
         <span className="notif-body t-body">
-          The {LOST.name} ran out, so we’ve put a ₹{BUTTER_CORN.list} dish on and sent
-          ₹{backTo(BUTTER_CORN)} back. Still 9 minutes. Tap if you’d rather have something else.
+          The {LOST.name} ran out. It’s a ₹{BUTTER_CORN.list} dish and ₹{backTo(BUTTER_CORN)} is
+          already going back — still landing in 9 minutes.
         </span>
       </motion.button>
 
@@ -297,20 +298,24 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                 <div className="grabber" />
                 <Ribbon />
 
-                <AnimatePresence mode="wait" initial={false}>
-                  {phase === "alert" ? (
+                {/* Deliberately not AnimatePresence. mode="wait" holds the incoming body
+                    until the outgoing one finishes exiting, and anything that re-renders
+                    that exiting subtree restarts the exit — so it never finishes and the
+                    swap deadlocks. A keyed remount just plays the enter animation and
+                    cannot get stuck. */}
+                {phase === "alert" ? (
                     <motion.div key="alert" className="sheet-body"
-                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
+                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }}
                       transition={T(D.nav)}
                     >
                       <div className="copy">
                         {/* upgrade first so it lands as good news, cause in the very next
                             breath so it never reads as hiding what went wrong */}
                         <h2 className="t-h2">You’ve been upgraded to {BUTTER_CORN.name}.</h2>
+                        {/* the ribbon above already carries the time — don't say it twice */}
                         <p className="t-body">
-                          The {LOST.name} ran out — so the kitchen’s put a ₹{BUTTER_CORN.list} dish on
-                          the griddle, charged you ₹{backTo(BUTTER_CORN)} less, and your nine minutes
-                          hasn’t moved.
+                          The {LOST.name} ran out. Butter Corn normally goes for ₹{BUTTER_CORN.list} —
+                          yours is ₹{BUTTER_CORN.yours}, with ₹{backTo(BUTTER_CORN)} already heading back.
                         </p>
                       </div>
                       <OptionRow item={BUTTER_CORN} selected />
@@ -325,14 +330,15 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                     </motion.div>
                   ) : (
                     <motion.div key="override" className="sheet-body"
-                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
+                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }}
                       transition={T(D.nav)}
                     >
                       <div className="copy">
-                        <h2 className="t-h2">Pick your upgrade.</h2>
+                        {/* they tapped "something else" expecting a downgrade — tell them otherwise */}
+                        <h2 className="t-h2">These are all upgrades too.</h2>
                         <p className="t-body">
-                          These stay in our kitchen all day, so they can’t run out on you. Every one of
-                          them costs less than you’ve already paid.
+                          We keep them on all day, so they can’t run out on you. Every one costs less
+                          than you paid.
                         </p>
                       </div>
                       <div className="options">
@@ -356,7 +362,6 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>
               </motion.div>
             )}
           </AnimatePresence>
@@ -371,7 +376,7 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                 <div className="toast-copy">
                   <div className="title-row">
                     <span className="wipe t-title">
-                      {resolution.kind === "swap" ? `Upgraded to ${resolution.item.name}` : "Dropped, and refunded"}
+                      {resolution.kind === "swap" ? `Upgraded to ${resolution.item.name}` : "Taken off your order"}
                       {!reduce && (
                         <motion.span className="sweep"
                           initial={{ x: "-140%" }} animate={{ x: "260%" }}
@@ -384,13 +389,13 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                   </div>
                   <div className="sub t-caption">
                     {resolution.kind === "swap"
-                      ? `A ₹${resolution.item.list} dish for ₹${resolution.item.yours} · ₹${backTo(resolution.item)} already on its way back`
-                      : `₹${LOST.paid} back to your card in 3–5 days. The rest still lands in 9 minutes.`}
+                      ? `A ₹${resolution.item.list} dish for ₹${resolution.item.yours} — ₹${backTo(resolution.item)} is on its way back`
+                      : `₹${LOST.paid} back to your card in 3–5 days. Everything else still lands in 9 minutes.`}
                   </div>
                   {/* the call is the customer's to ask for, never ours to impose */}
                   {resolution.kind === "refund" && (
                     <button className="toast-action t-caption-strong" onClick={() => setCallAsked(true)} disabled={callAsked}>
-                      {callAsked ? "We’ll ring you in a minute." : "Something wrong? Ask us to call"}
+                      {callAsked ? "We’ll call you in a minute." : "Something wrong? Ask us to call"}
                     </button>
                   )}
                 </div>
