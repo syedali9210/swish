@@ -74,10 +74,10 @@
 
 /* On a phone the note is pinned to the bottom, so the device has to leave room
    for it — these are sized against viewport height, not just width. */
-@media (max-width: 940px) { :root { --s: 0.48; } }
-@media (max-width: 560px) { :root { --s: 0.40; } }
-@media (max-width: 430px) { :root { --s: 0.34; } }
-@media (max-width: 940px) and (max-height: 700px) { :root { --s: 0.34; } }
+@media (max-width: 940px) { :root { --s: 0.54; } }
+@media (max-width: 560px) { :root { --s: 0.50; } }
+@media (max-width: 430px) { :root { --s: 0.46; } }
+@media (max-width: 940px) and (max-height: 700px) { :root { --s: 0.40; } }
 
 /* ---- type ramp: 11 steps, weight always carried by the style ---- */
 .t-display { font: 700 calc(42px * var(--s)) / calc(48px * var(--s)) var(--font); letter-spacing: -0.02em; }

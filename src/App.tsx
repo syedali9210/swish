@@ -16,15 +16,17 @@ function useTenMinuteEgg() {
   return shown;
 }
 
-/* One line, pinned to the component it is about. */
-type Note = { step: string; text: string; target: string };
+/* One line, pinned to the component it is about. `safe` says which side of that
+   component is dead space — the map, or empty lock screen — so on a phone the
+   bubble lands there instead of over anything worth reading. */
+type Note = { step: string; text: string; target: string; safe: "above" | "below" };
 const NOTES: Record<Stage, Note> = {
-  tracking: { step: "Before", text: "The promise everything hangs on.", target: ".eta-pill" },
-  locked: { step: "01", text: "Everything they need, before they unlock.", target: ".notif" },
-  alert: { step: "02", text: "Already cooking, already ₹20 cheaper.", target: ".sheet .option" },
-  override: { step: "03", text: "Greyed out — already in your order.", target: ".option.disabled" },
-  resolved: { step: "04", text: "Same nine minutes. No call.", target: ".eta-pill" },
-  dropped: { step: "04", text: "Refund up front, no call needed.", target: ".toast" },
+  tracking: { step: "Before", text: "The promise everything hangs on.", target: ".eta-pill", safe: "above" },
+  locked: { step: "01", text: "Everything they need, before they unlock.", target: ".notif", safe: "below" },
+  alert: { step: "02", text: "Already cooking, already ₹20 cheaper.", target: ".sheet .option", safe: "above" },
+  override: { step: "03", text: "Greyed out — already in your order.", target: ".option.disabled", safe: "above" },
+  resolved: { step: "04", text: "Same nine minutes. No call.", target: ".eta-pill", safe: "above" },
+  dropped: { step: "04", text: "Refund up front, no call needed.", target: ".toast", safe: "below" },
 };
 
 export default function App() {
@@ -78,20 +80,31 @@ export default function App() {
         const deviceRight = device ? device.getBoundingClientRect().right - w.x : x + bw;
         const gutter = w.width - deviceRight - 12;
         let place: string, px: number, py: number;
-        /* Beside the artwork whenever there's room for it — including on a phone,
-           where the device is left-aligned to open a gutter. Nothing gets covered. */
         if (gutter >= p.width) {
+          // room beside the artwork: nothing is covered at all
           place = "right";
           px = deviceRight + 12;
           py = y + bh / 2 - p.height / 2;
-        } else if (y - p.height - 12 >= 2) {
-          place = "above";
-          px = x + bw / 2 - p.width / 2;
-          py = y - p.height - 12;
         } else {
-          place = "below";
+          /* No gutter, so it has to sit on the screen — put it on the dead space.
+             With a sheet open that means the map above it, never the sheet itself. */
+          const phone = wrap.querySelector(".phone")?.getBoundingClientRect();
+          const sheet = wrap.querySelector(".sheet")?.getBoundingClientRect();
+          const top = phone ? phone.top - w.y + 8 : 0;
+          const bottom = phone ? phone.bottom - w.y - 8 : w.height;
+          const sheetTop = sheet ? sheet.top - w.y - 10 : null;
+
           px = x + bw / 2 - p.width / 2;
-          py = y + bh + 12;
+          if (note.safe === "above") {
+            place = "above";
+            py = y - p.height - 12;
+            if (sheetTop !== null) py = Math.min(py, sheetTop - p.height);
+            if (py < top) { place = "below"; py = y + bh + 12; }
+          } else {
+            place = "below";
+            py = y + bh + 12;
+            if (py + p.height > bottom) { place = "above"; py = y - p.height - 12; }
+          }
         }
         pop.dataset.place = place;
         pop.style.left = `${Math.max(4, Math.min(px, w.width - p.width - 4))}px`;
@@ -101,12 +114,19 @@ export default function App() {
       return `${r.x},${r.y},${r.width},${r.height}`;
     };
 
+    /* Track every frame until it settles, then keep a slow pulse going. Stopping
+       dead leaves the overlay stranded if anything shifts later — a late
+       animation, a font swap, the sheet resizing under it. */
+    let slow = 0;
     const tick = () => {
       if (stopped) return;
       const key = apply();
       if (key && key === last) stable++; else { stable = 0; last = key ?? ""; }
       const now = performance.now();
-      if ((stable >= 4 && now > minUntil) || now > deadline) return;
+      if ((stable >= 4 && now > minUntil) || now > deadline) {
+        slow = window.setInterval(apply, 400);
+        return;
+      }
       raf = requestAnimationFrame(tick);
     };
 
@@ -123,6 +143,7 @@ export default function App() {
     return () => {
       stopped = true;
       cancelAnimationFrame(raf);
+      clearInterval(slow);
       backups.forEach(clearTimeout);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", apply);

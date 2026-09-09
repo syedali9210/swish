@@ -105,18 +105,17 @@ blockquote.review cite {
 
 /* Narrow: left-align the device so the leftover width becomes a gutter the
    bubble can live in, rather than floating over the screen. */
+/* Narrow: device stays centred, and the bubble goes wherever the dead space is. */
 @media (max-width: 940px) {
-  .page { padding-left: 12px; padding-right: 12px; }
-  .wrap { padding: 0 10px; }
+  .page { padding-left: 14px; padding-right: 14px; }
   .journey { width: 100%; padding-right: 0; }
-  .stage { align-items: flex-start; }
   .pop {
-    max-width: calc(100vw - 636px * var(--s) - 38px);
-    padding: 8px 10px 10px;
+    max-width: min(230px, calc(100vw - 64px));
+    padding: 8px 11px 10px;
     border-radius: 10px;
   }
   .pop-step { font-size: 9px; margin-bottom: 3px; }
-  .pop-text { font-size: 12px; line-height: 1.4; }
+  .pop-text { font-size: 12.5px; line-height: 1.4; }
 }
 
 /* ---------------- close ---------------- */
