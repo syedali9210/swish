@@ -20,11 +20,10 @@ function useTenMinuteEgg() {
    Nothing at rest — the mockup speaks first. */
 const NOTES: Partial<Record<Stage, string>> = {
   locked: "Works even if they never open the app.",
-  alert1: "The kitchen decides. You get 40 seconds to override.",
-  override1: "Bhel Puri is already in the bag, so it’s dead.",
-  resolved1: "The clock never moved. That’s the whole point.",
-  alert2: "Second failure, so the kitchen stops guessing.",
-  resolved2: "Two failures, no phone call, nine minutes intact.",
+  alert: "A dearer dish, for less, already cooking. Forty seconds to say no.",
+  override: "These stay in the kitchen all day, so they can’t run out on you twice.",
+  resolved: "Better food, money back, and the clock never moved.",
+  dropped: "Refund stated up front — and the call is yours to ask for, not ours to make.",
 };
 
 export default function App() {
@@ -50,7 +49,7 @@ export default function App() {
           <cite>Swish · App Store review, 13 July</cite>
         </blockquote>
         <h1 className="hero-line">
-          The kitchen already put something else on the griddle.{" "}
+          The kitchen already started something better, and put ₹20 back.{" "}
           <span>Forty seconds to say no.</span>
         </h1>
       </header>

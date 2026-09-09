@@ -9,34 +9,37 @@ import "./styles.css";
 const EASE = [0.16, 1, 0.3, 1] as const;
 const D = { nav: 0.15, sheet: 0.2, screen: 0.3 };
 
-type Item = { id: string; name: string; meta: string; price: number; thumb: string };
+type Item = {
+  id: string; name: string; meta: string;
+  list: number;   // what it normally sells for
+  yours: number;  // what you are actually charged
+  thumb: string;
+};
 type Phase = "tracking" | "locked" | "alert" | "override";
 type Resolution = { kind: "swap"; item: Item; secs: number } | { kind: "refund" } | null;
 
-/* The page reads this to show the reasoning for wherever you are in the flow,
-   rather than dumping all of it up front. */
-export type Stage = "tracking" | "locked" | "alert1" | "override1" | "resolved1" | "alert2" | "resolved2";
+export type Stage = "tracking" | "locked" | "alert" | "override" | "resolved" | "dropped";
 
-const BUTTER_CORN: Item = { id: "butter-corn", name: "Butter Corn", meta: "Serves 1 · closest match", price: 139, thumb: "/food/butter-corn.jpg" };
-const BHEL_PURI: Item = { id: "bhel-puri", name: "Bhel Puri", meta: "Serves 1 · Bestseller", price: 119, thumb: "/food/bhel-puri.jpg" };
-const WEDGES: Item = { id: "potato-wedges", name: "Peri Peri Potato Wedges", meta: "Serves 1 · Crispy", price: 149, thumb: "/food/potato-wedges.jpg" };
+/* The kitchen keeps a few things on all day. Swaps only ever come from here, so
+   the thing that happened to the 13 Jul reviewer — agreeing to a substitute that
+   then also ran out, three times — cannot happen. It is designed out, not
+   handled. Priced below what you already paid, so the swap is never a downgrade. */
+const BUTTER_CORN: Item = { id: "butter-corn", name: "Butter Corn", meta: "Always in our kitchen", list: 169, yours: 119, thumb: "/food/butter-corn.jpg" };
+const WEDGES: Item = { id: "potato-wedges", name: "Peri Peri Potato Wedges", meta: "Always in our kitchen", list: 189, yours: 129, thumb: "/food/potato-wedges.jpg" };
+const ALWAYS_ON = [BUTTER_CORN, WEDGES];
 
-const LOST = { name: "Peri Peri Corn", price: 139 };
-/* The rest of the bag. Bhel Puri is already here, so it must never be offered as a
-   swap — a reviewer on 11 Aug was talked into exactly that over the phone and
-   "ended up giving me the same item twice". */
+const BHEL_PURI: Item = { id: "bhel-puri", name: "Bhel Puri", meta: "Bestseller", list: 119, yours: 119, thumb: "/food/bhel-puri.jpg" };
+
+const LOST = { name: "Peri Peri Corn", paid: 139 };
+/* Already in the bag. A reviewer on 11 Aug was talked into a duplicate over the
+   phone, so anything already ordered is shown dead rather than offered. */
 const ALSO_IN_ORDER = [BHEL_PURI];
-const ORDER_TOTAL = LOST.price + BHEL_PURI.price + 7;
+// what you can pick from, with anything already ordered shown dead at the end
+const CHOICES = [...ALWAYS_ON, ...ALSO_IN_ORDER];
 const OVERRIDE_WINDOW = 40;
 
-const ALTERNATIVES = [BUTTER_CORN, BHEL_PURI, WEDGES];
 const inOrder = (i: Item) => ALSO_IN_ORDER.some((o) => o.id === i.id);
-const delta = (p: number) =>
-  p === LOST.price ? "Same price" : p < LOST.price ? `₹${LOST.price - p} back` : `₹${p - LOST.price} more`;
-const money = (p: number) =>
-  p === LOST.price ? "total unchanged"
-    : p < LOST.price ? `₹${LOST.price - p} back to your card`
-    : `₹${p - LOST.price} added to your card`;
+const backTo = (i: Item) => LOST.paid - i.yours;
 
 const Check = () => (
   <svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -62,38 +65,48 @@ const Ribbon = () => (
   </div>
 );
 
+/* The upgrade is shown, never announced: a dearer dish, struck through to what
+   you actually pay, with the difference going back. The customer draws the
+   conclusion, which lands better than the app claiming it. */
 function OptionRow({ item, selected, disabled, onPick }: { item: Item; selected?: boolean; disabled?: boolean; onPick?: () => void }) {
+  const better = !disabled && item.list > LOST.paid;
   const body = (
     <>
       <img className="thumb" src={item.thumb} alt="" />
       <span className="info">
-        <span className="t-title">{item.name}</span>
+        <span className="name-row">
+          <span className="t-title">{item.name}</span>
+          {better && <span className="pill t-micro">Upgrade</span>}
+        </span>
         <span className="meta t-caption">{disabled ? "Already in your order" : item.meta}</span>
       </span>
       <span className="money">
-        <span className="t-title">₹{item.price}</span>
-        {!disabled && <span className="delta t-caption">{delta(item.price)}</span>}
+        <span className="price-row">
+          {better && <s className="list t-caption">₹{item.list}</s>}
+          <span className="t-title">₹{item.yours}</span>
+        </span>
+        {!disabled && (
+          <span className="delta t-caption">
+            {backTo(item) > 0 ? `₹${backTo(item)} back` : backTo(item) < 0 ? `₹${-backTo(item)} more` : "Same price"}
+          </span>
+        )}
       </span>
       <span className={`radio${selected ? " on" : ""}`}>{selected && <Check />}</span>
     </>
   );
   if (disabled) return <div className="option disabled">{body}</div>;
   return (
-    <button className={`option${selected ? " selected" : ""}`} onClick={onPick} aria-pressed={!!selected}>
-      {body}
-    </button>
+    <button className={`option${selected ? " selected" : ""}`} onClick={onPick} aria-pressed={!!selected}>{body}</button>
   );
 }
 
-/* Owns its own ticking state so the sheet above it never re-renders —
-   a re-render per second was restarting the sheet's layout animation. */
+/* Owns its own ticking state so the sheet above it never re-renders. It also
+   stops the moment its body starts leaving — setting state on an exiting
+   AnimatePresence child restarts the exit, which deadlocks mode="wait". */
 function Countdown({ from, liveRef, onExpire }: { from: number; liveRef: React.RefObject<number>; onExpire: () => void }) {
   const [left, setLeft] = useState(from);
   const expire = useRef(onExpire);
   expire.current = onExpire;
-  /* Stop ticking the moment this body starts leaving. Setting state on an
-     exiting AnimatePresence child restarts its exit animation, so it never
-     completes — and with mode="wait" that deadlocks the swap to the next body. */
   const present = useIsPresent();
 
   useEffect(() => {
@@ -115,7 +128,6 @@ function Countdown({ from, liveRef, onExpire }: { from: number; liveRef: React.R
         <span className="num t-caption-strong" aria-live="polite">{Math.ceil(left)}s</span>
       </div>
       <div className="track">
-        {/* drains in CSS — no React work per frame */}
         <div className="fill" style={{ "--from": `${(from / OVERRIDE_WINDOW) * 100}%`, animationDuration: `${from}s` } as React.CSSProperties} />
       </div>
     </div>
@@ -133,8 +145,6 @@ function LockScreen({ onOpen, T, reduce }: { onOpen: () => void; T: (d: number, 
       <div className="lock-date t-subtitle">Tuesday, 9 September</div>
       <div className="lock-clock">9:41</div>
 
-      {/* Has to survive being the only thing someone reads: what broke, what we
-          already did, that the 9 minutes holds, and what tapping gets you. */}
       <motion.button className="notif" onClick={onOpen}
         initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={T(D.screen, 0.35)}
@@ -146,7 +156,8 @@ function LockScreen({ onOpen, T, reduce }: { onOpen: () => void; T: (d: number, 
         </span>
         <span className="notif-title t-title">The {LOST.name} just ran out</span>
         <span className="notif-body t-body">
-          We’ve put {BUTTER_CORN.name} on the griddle — same 9 minutes, same price. Tap to change it.
+          We’ve put {BUTTER_CORN.name} on instead — a ₹{BUTTER_CORN.list} dish, yours for ₹{BUTTER_CORN.yours}.
+          Same 9 minutes. Tap to change it.
         </span>
       </motion.button>
 
@@ -163,55 +174,36 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
   const T = (d: number, delay = 0) => ({ duration: reduce ? 0 : d, ease: EASE, delay: reduce ? 0 : delay });
 
   const [phase, setPhase] = useState<Phase>("tracking");
-  const [round, setRound] = useState<1 | 2>(1);
-  const [lostAgain, setLostAgain] = useState<Item | null>(null); // whatever the first round settled on
   const [chosen, setChosen] = useState<Item>(BUTTER_CORN);
   const [resolution, setResolution] = useState<Resolution>(null);
+  const [callAsked, setCallAsked] = useState(false);
   const [barFrom, setBarFrom] = useState(OVERRIDE_WINDOW);
   const remainingRef = useRef(OVERRIDE_WINDOW);
 
   const settle = (r: NonNullable<Resolution>) => { setResolution(r); setPhase("tracking"); };
-  // the countdown only exists in round one, so there is no elapsed time to report after that
   const swap = (item: Item) =>
-    settle({ kind: "swap", item, secs: round === 1 ? Math.max(1, Math.round(OVERRIDE_WINDOW - remainingRef.current)) : 0 });
+    settle({ kind: "swap", item, secs: Math.max(1, Math.round(OVERRIDE_WINDOW - remainingRef.current)) });
 
-  // order placed, phone goes idle, then the kitchen finds out mid-cook
   useEffect(() => {
-    if (phase !== "tracking" || resolution || round !== 1) return;
+    if (phase !== "tracking" || resolution) return;
     const t = setTimeout(() => setPhase("locked"), 1800);
     return () => clearTimeout(t);
-  }, [phase, resolution, round]);
+  }, [phase, resolution]);
 
-  /* The cascade. The 13 Jul reviewer was called three times: the kachori went, then
-     the batata vada they agreed to, then the sandwich. A design that only survives
-     one failure does not survive the review it is answering. */
-  useEffect(() => {
-    if (round !== 1 || !resolution || resolution.kind !== "swap") return;
-    const failed = resolution.item; // whatever you actually settled on, not a fixed item
-    const t = setTimeout(() => {
-      setLostAgain(failed); setRound(2); setResolution(null); setPhase("alert");
-    }, 2600);
-    return () => clearTimeout(t);
-  }, [round, resolution]);
-
-  useEffect(() => { if (phase === "alert" && round === 1) setBarFrom(remainingRef.current); }, [phase, round]);
+  useEffect(() => { if (phase === "alert") setBarFrom(remainingRef.current); }, [phase]);
 
   const replay = () => {
     remainingRef.current = OVERRIDE_WINDOW;
     setResolution(null); setChosen(BUTTER_CORN); setBarFrom(OVERRIDE_WINDOW);
-    setRound(1); setLostAgain(null); setPhase("tracking");
+    setCallAsked(false); setPhase("tracking");
   };
 
   const sheetOpen = phase === "alert" || phase === "override";
-  const candidates = ALTERNATIVES;
-  // what the kitchen can still make: not already in the bag, and not the one that just went
-  const remaining = ALTERNATIVES.find((i) => !inOrder(i) && i.id !== lostAgain?.id) ?? null;
-
   const stage: Stage =
     phase === "locked" ? "locked"
-      : phase === "override" ? "override1"
-      : phase === "alert" ? (round === 1 ? "alert1" : "alert2")
-      : resolution ? (round === 1 ? "resolved1" : "resolved2")
+      : phase === "override" ? "override"
+      : phase === "alert" ? "alert"
+      : resolution ? (resolution.kind === "refund" ? "dropped" : "resolved")
       : "tracking";
   const emit = useRef(onStage);
   emit.current = onStage;
@@ -241,7 +233,6 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
 
             <div className="map">
               <img src="/map.jpg" alt="Live map of the order on its way" />
-              {/* The clock never moves. On resolve it flashes once, to make you look. */}
               <motion.div className="eta-pill"
                 animate={resolution && !reduce ? { scale: [1, 1.05, 1], backgroundColor: ["#fdfdfd", "#e1f7e3", "#fdfdfd"] } : {}}
                 transition={{ duration: 0.5, ease: "easeOut" }}
@@ -299,7 +290,6 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
 
           <AnimatePresence>
             {sheetOpen && (
-              // translate and opacity run together — exactly what the recording does
               <motion.div key="sheet" className="sheet"
                 initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
                 transition={T(D.sheet)}
@@ -308,7 +298,7 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                 <Ribbon />
 
                 <AnimatePresence mode="wait" initial={false}>
-                  {phase === "alert" && round === 1 ? (
+                  {phase === "alert" ? (
                     <motion.div key="alert" className="sheet-body"
                       initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
                       transition={T(D.nav)}
@@ -316,46 +306,19 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                       <div className="copy">
                         <h2 className="t-h2">The {LOST.name} just ran out.</h2>
                         <p className="t-body">
-                          We’ve put {BUTTER_CORN.name} on the griddle instead — same 9 minutes, same price.
-                          Change it if you’d rather have something else.
+                          We’ve put {BUTTER_CORN.name} on the griddle instead — a ₹{BUTTER_CORN.list} dish,
+                          yours for ₹{BUTTER_CORN.yours}. The ₹{backTo(BUTTER_CORN)} difference is already
+                          heading back to your card.
                         </p>
                       </div>
                       <OptionRow item={BUTTER_CORN} selected />
-                      {/* urgency sits on the decision, never on the delivery */}
                       <Countdown from={barFrom} liveRef={remainingRef} onExpire={() => swap(BUTTER_CORN)} />
                       <div className="actions">
                         <button className="btn btn-primary t-title" onClick={() => swap(BUTTER_CORN)}>Keep it</button>
                         <button className="btn btn-secondary t-label" onClick={() => setPhase("override")}>Pick something else</button>
                         <button className="btn btn-ghost t-label" onClick={() => settle({ kind: "refund" })}>
-                          Just drop it &amp; refund ₹{LOST.price}
+                          Just drop it &amp; refund ₹{LOST.paid}
                         </button>
-                      </div>
-                    </motion.div>
-                  ) : phase === "alert" && round === 2 ? (
-                    /* Second failure. The kitchen decided once and was wrong, so now it
-                       asks — no auto-decision, no countdown, and refund leads. */
-                    <motion.div key="alert2" className="sheet-body"
-                      initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -14 }}
-                      transition={T(D.nav)}
-                    >
-                      <div className="copy">
-                        <h2 className="t-h2">{(lostAgain ?? BUTTER_CORN).name} just went too.</h2>
-                        <p className="t-body">
-                          {remaining
-                            ? "That’s twice, so we’re not going to keep guessing. This is the last thing the kitchen can make right now — or we refund it and the rest still comes."
-                            : "That’s twice, and there’s nothing else the kitchen can make right now. We’ll put the money back and the rest of your order still comes."}
-                        </p>
-                      </div>
-                      {remaining && <OptionRow item={remaining} />}
-                      <div className="actions">
-                        <button className="btn btn-primary t-title" onClick={() => settle({ kind: "refund" })}>
-                          Refund ₹{LOST.price}, send the rest
-                        </button>
-                        {remaining && (
-                          <button className="btn btn-secondary t-label" onClick={() => swap(remaining)}>
-                            Send {remaining.name} instead
-                          </button>
-                        )}
                       </div>
                     </motion.div>
                   ) : (
@@ -365,10 +328,13 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                     >
                       <div className="copy">
                         <h2 className="t-h2">Pick something else</h2>
-                        <p className="t-body">Everything here is in the kitchen right now, so your 9 minutes holds either way.</p>
+                        <p className="t-body">
+                          We keep these on all day, so they can’t run out on you twice. Both cost less than
+                          what you’ve already paid.
+                        </p>
                       </div>
                       <div className="options">
-                        {candidates.map((o, i) => (
+                        {CHOICES.map((o, i) => (
                           <motion.div key={o.id}
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                             transition={T(D.nav, 0.04 * i)}
@@ -378,16 +344,12 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                         ))}
                       </div>
                       <div className="t-caption note">
-                        {chosen.price === LOST.price
-                          ? `Your total stays ₹${ORDER_TOTAL}`
-                          : chosen.price < LOST.price
-                            ? `₹${LOST.price - chosen.price} goes back to the card you paid with`
-                            : `₹${chosen.price - LOST.price} extra will be charged to your card`}
+                        ₹{backTo(chosen)} goes back to the card you paid with
                       </div>
                       <div className="actions">
                         <button className="btn btn-primary t-title" onClick={() => swap(chosen)}>Confirm {chosen.name}</button>
                         <button className="btn btn-ghost t-label" onClick={() => settle({ kind: "refund" })}>
-                          Just drop it &amp; refund ₹{LOST.price}
+                          Just drop it &amp; refund ₹{LOST.paid}
                         </button>
                       </div>
                     </motion.div>
@@ -404,7 +366,7 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                 transition={T(D.screen)}
               >
                 <div className="check"><Check /></div>
-                <div>
+                <div className="toast-copy">
                   <div className="title-row">
                     <span className="wipe t-title">
                       {resolution.kind === "swap" ? `${resolution.item.name} is on the griddle` : `${LOST.name} dropped`}
@@ -420,11 +382,15 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                   </div>
                   <div className="sub t-caption">
                     {resolution.kind === "swap"
-                      ? resolution.secs > 0
-                        ? `Swapped in ${resolution.secs} seconds · ${money(resolution.item.price)}`
-                        : `Swapped · ${money(resolution.item.price)}`
-                      : `₹${LOST.price} back to your card · the rest is still on its way`}
+                      ? `A ₹${resolution.item.list} dish for ₹${resolution.item.yours} · ₹${backTo(resolution.item)} back to your card`
+                      : `₹${LOST.paid} back to your card in 3–5 days · the rest still comes in 9 minutes`}
                   </div>
+                  {/* the call is the customer's to ask for, never ours to impose */}
+                  {resolution.kind === "refund" && (
+                    <button className="toast-action t-caption-strong" onClick={() => setCallAsked(true)} disabled={callAsked}>
+                      {callAsked ? "We’ll ring you in a minute." : "Something wrong? Ask us to call"}
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}

@@ -56,10 +56,17 @@ Everything else follows from that:
   users, not to rush active ones.
 - **Swaps promise "same 9 minutes."** Only a company that owns its kitchens can say that.
   Blinkit's warehouse marks stock zero and moves on; Swish runs out mid-service.
-- **It survives happening twice.** The July reviewer was called three times — the substitute they
-  agreed to also ran out. A design that only handles one failure doesn't answer the review it
-  cites. So when the swap runs out too, the kitchen stops deciding: no countdown, no third guess,
-  and refund becomes the primary action. It gets to be confident exactly once.
+- **It can't happen twice.** The July reviewer was called three times — the substitute they agreed
+  to also ran out. So swaps only ever come from a small set the kitchen keeps on all day. The
+  cascade isn't handled gracefully, it's designed out.
+- **The swap is an upgrade, shown rather than announced.** Everything in that set normally sells
+  for more than what you paid, and you get it for less — a ₹169 dish for ₹119, with ₹20 going back
+  to your card. The app never says "you've been upgraded"; it shows the struck price and the
+  refund and lets you draw the conclusion. Being told you've been upgraded when you didn't ask is
+  the tone that writes one-star reviews.
+- **Dropping states the refund, and the call is yours to ask for.** Amount and timing up front,
+  the rest of the order unaffected, and a "Something wrong? Ask us to call" the customer triggers.
+  Calling them automatically would reinstate the exact thing this whole piece argues against.
 - **It never offers something already in the order.** The August reviewer was talked into a
   duplicate over the phone. Bhel Puri is already in that bag, so it appears in the list greyed out
   with a dead control — reusing Swish's own out-of-stock treatment rather than hiding it, so the

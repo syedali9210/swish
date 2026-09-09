@@ -186,7 +186,20 @@ body {
 .option .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: calc(4px * var(--s)); }
 .option .meta { color: var(--text-secondary); }
 .option .money { display: flex; flex-direction: column; align-items: flex-end; gap: calc(4px * var(--s)); flex: 0 0 auto; }
-.option .delta { color: var(--text-secondary); }
+.option .delta { color: var(--brand-700); }
+
+/* the upgrade is evidenced, not announced: dearer dish, struck to what you pay */
+.name-row { display: flex; align-items: center; gap: calc(8px * var(--s)); }
+.pill {
+  padding: calc(3px * var(--s)) calc(9px * var(--s));
+  border-radius: var(--r-full);
+  background: var(--brand-100);
+  color: var(--brand-900);
+  text-transform: uppercase;
+}
+.price-row { display: flex; align-items: baseline; gap: calc(7px * var(--s)); }
+/* secondary, not tertiary: on the selected card's tint, tertiary lands at 4.47 */
+.price-row .list { color: var(--text-secondary); text-decoration-thickness: 1px; }
 .radio {
   width: calc(28px * var(--s)); height: calc(28px * var(--s)); border-radius: var(--r-full);
   border: 2px solid var(--border-default); flex: 0 0 auto; display: grid; place-items: center;
@@ -236,6 +249,14 @@ body {
 }
 .toast .sub { color: var(--text-secondary); }
 .toast .title-row { display: flex; align-items: center; gap: calc(8px * var(--s)); }
+.toast-copy { display: flex; flex-direction: column; gap: calc(4px * var(--s)); min-width: 0; }
+.toast-action {
+  align-self: flex-start;
+  margin-top: calc(6px * var(--s));
+  padding: 0; border: none; background: none; cursor: pointer;
+  color: var(--brand-700); font-family: var(--font); text-align: left;
+}
+.toast-action:disabled { color: var(--text-secondary); cursor: default; }
 
 /* the sparkle wipe — their splash-screen signature, reused on resolve */
 .wipe { position: relative; display: inline-block; overflow: hidden; }
