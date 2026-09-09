@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
 import "./tokens.css";
 import "./styles.css";
 
@@ -29,6 +29,7 @@ const ALSO_IN_ORDER = [BHEL_PURI];
 const ORDER_TOTAL = LOST.price + BHEL_PURI.price + 7;
 const OVERRIDE_WINDOW = 40;
 
+const ALTERNATIVES = [BUTTER_CORN, BHEL_PURI, WEDGES];
 const inOrder = (i: Item) => ALSO_IN_ORDER.some((o) => o.id === i.id);
 const delta = (p: number) =>
   p === LOST.price ? "Same price" : p < LOST.price ? `₹${LOST.price - p} back` : `₹${p - LOST.price} more`;
@@ -90,8 +91,13 @@ function Countdown({ from, liveRef, onExpire }: { from: number; liveRef: React.R
   const [left, setLeft] = useState(from);
   const expire = useRef(onExpire);
   expire.current = onExpire;
+  /* Stop ticking the moment this body starts leaving. Setting state on an
+     exiting AnimatePresence child restarts its exit animation, so it never
+     completes — and with mode="wait" that deadlocks the swap to the next body. */
+  const present = useIsPresent();
 
   useEffect(() => {
+    if (!present) return;
     const start = performance.now();
     const id = setInterval(() => {
       const l = Math.max(0, from - (performance.now() - start) / 1000);
@@ -100,7 +106,7 @@ function Countdown({ from, liveRef, onExpire }: { from: number; liveRef: React.R
       if (l <= 0) { clearInterval(id); expire.current(); }
     }, 250);
     return () => clearInterval(id);
-  }, [from, liveRef]);
+  }, [from, liveRef, present]);
 
   return (
     <div className="countdown">
@@ -158,14 +164,16 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
 
   const [phase, setPhase] = useState<Phase>("tracking");
   const [round, setRound] = useState<1 | 2>(1);
+  const [lostAgain, setLostAgain] = useState<Item | null>(null); // whatever the first round settled on
   const [chosen, setChosen] = useState<Item>(BUTTER_CORN);
   const [resolution, setResolution] = useState<Resolution>(null);
   const [barFrom, setBarFrom] = useState(OVERRIDE_WINDOW);
   const remainingRef = useRef(OVERRIDE_WINDOW);
 
   const settle = (r: NonNullable<Resolution>) => { setResolution(r); setPhase("tracking"); };
+  // the countdown only exists in round one, so there is no elapsed time to report after that
   const swap = (item: Item) =>
-    settle({ kind: "swap", item, secs: Math.max(1, Math.round(OVERRIDE_WINDOW - remainingRef.current)) });
+    settle({ kind: "swap", item, secs: round === 1 ? Math.max(1, Math.round(OVERRIDE_WINDOW - remainingRef.current)) : 0 });
 
   // order placed, phone goes idle, then the kitchen finds out mid-cook
   useEffect(() => {
@@ -179,7 +187,10 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
      one failure does not survive the review it is answering. */
   useEffect(() => {
     if (round !== 1 || !resolution || resolution.kind !== "swap") return;
-    const t = setTimeout(() => { setRound(2); setResolution(null); setPhase("alert"); }, 2600);
+    const failed = resolution.item; // whatever you actually settled on, not a fixed item
+    const t = setTimeout(() => {
+      setLostAgain(failed); setRound(2); setResolution(null); setPhase("alert");
+    }, 2600);
     return () => clearTimeout(t);
   }, [round, resolution]);
 
@@ -187,11 +198,14 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
 
   const replay = () => {
     remainingRef.current = OVERRIDE_WINDOW;
-    setResolution(null); setChosen(BUTTER_CORN); setBarFrom(OVERRIDE_WINDOW); setRound(1); setPhase("tracking");
+    setResolution(null); setChosen(BUTTER_CORN); setBarFrom(OVERRIDE_WINDOW);
+    setRound(1); setLostAgain(null); setPhase("tracking");
   };
 
   const sheetOpen = phase === "alert" || phase === "override";
-  const candidates = [BUTTER_CORN, BHEL_PURI, WEDGES];
+  const candidates = ALTERNATIVES;
+  // what the kitchen can still make: not already in the bag, and not the one that just went
+  const remaining = ALTERNATIVES.find((i) => !inOrder(i) && i.id !== lostAgain?.id) ?? null;
 
   const stage: Stage =
     phase === "locked" ? "locked"
@@ -204,7 +218,7 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
   useEffect(() => { emit.current?.(stage); }, [stage]);
 
   return (
-    <div className="stage">
+    <div className="stage" data-stage={stage}>
       <div className={`device${phase === "locked" ? " on-dark" : ""}`}>
         <div className="phone">
           <div className="screen">
@@ -325,20 +339,23 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                       transition={T(D.nav)}
                     >
                       <div className="copy">
-                        <h2 className="t-h2">{BUTTER_CORN.name} just went too.</h2>
+                        <h2 className="t-h2">{(lostAgain ?? BUTTER_CORN).name} just went too.</h2>
                         <p className="t-body">
-                          That’s twice, so we’re not going to keep guessing. This is the last thing the
-                          kitchen can make right now — or we refund it and the rest still comes.
+                          {remaining
+                            ? "That’s twice, so we’re not going to keep guessing. This is the last thing the kitchen can make right now — or we refund it and the rest still comes."
+                            : "That’s twice, and there’s nothing else the kitchen can make right now. We’ll put the money back and the rest of your order still comes."}
                         </p>
                       </div>
-                      <OptionRow item={WEDGES} />
+                      {remaining && <OptionRow item={remaining} />}
                       <div className="actions">
                         <button className="btn btn-primary t-title" onClick={() => settle({ kind: "refund" })}>
                           Refund ₹{LOST.price}, send the rest
                         </button>
-                        <button className="btn btn-secondary t-label" onClick={() => swap(WEDGES)}>
-                          Send the {WEDGES.name.split(" ").slice(-1)[0].toLowerCase()} instead · ₹{WEDGES.price}
-                        </button>
+                        {remaining && (
+                          <button className="btn btn-secondary t-label" onClick={() => swap(remaining)}>
+                            Send {remaining.name} instead
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   ) : (
@@ -403,7 +420,9 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                   </div>
                   <div className="sub t-caption">
                     {resolution.kind === "swap"
-                      ? `Swapped in ${resolution.secs} seconds · ${money(resolution.item.price)}`
+                      ? resolution.secs > 0
+                        ? `Swapped in ${resolution.secs} seconds · ${money(resolution.item.price)}`
+                        : `Swapped · ${money(resolution.item.price)}`
                       : `₹${LOST.price} back to your card · the rest is still on its way`}
                   </div>
                 </div>
