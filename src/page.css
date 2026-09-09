@@ -103,11 +103,20 @@ blockquote.review cite {
 .pop[data-place="above"]::after { bottom: -5px; left: 50%; margin-left: -5px; transform: rotate(-45deg); }
 .pop[data-place="below"]::after { top: -5px; left: 50%; margin-left: -5px; transform: rotate(135deg); }
 
-/* Narrow: no side gutter, and the bubble floats over the artwork instead. */
+/* Narrow: left-align the device so the leftover width becomes a gutter the
+   bubble can live in, rather than floating over the screen. */
 @media (max-width: 940px) {
-  .journey { padding-right: 0; }
-  .pop { max-width: min(240px, calc(100vw - 40px)); }
-  .pop-text { font-size: 13px; }
+  .page { padding-left: 12px; padding-right: 12px; }
+  .wrap { padding: 0 10px; }
+  .journey { width: 100%; padding-right: 0; }
+  .stage { align-items: flex-start; }
+  .pop {
+    max-width: calc(100vw - 636px * var(--s) - 38px);
+    padding: 8px 10px 10px;
+    border-radius: 10px;
+  }
+  .pop-step { font-size: 9px; margin-bottom: 3px; }
+  .pop-text { font-size: 12px; line-height: 1.4; }
 }
 
 /* ---------------- close ---------------- */

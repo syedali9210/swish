@@ -19,12 +19,12 @@ function useTenMinuteEgg() {
 /* One line, pinned to the component it is about. */
 type Note = { step: string; text: string; target: string };
 const NOTES: Record<Stage, Note> = {
-  tracking: { step: "Before", text: "Nine minutes. The promise everything else hangs on.", target: ".eta-pill" },
-  locked: { step: "01", text: "Everything they need to know, before they unlock.", target: ".notif" },
-  alert: { step: "02", text: "Already cooking, already ₹20 cheaper. It decided instead of asking.", target: ".sheet .option" },
-  override: { step: "03", text: "Greyed out — it's already in your order.", target: ".option.disabled" },
-  resolved: { step: "04", text: "Same nine minutes. Nobody had to call.", target: ".eta-pill" },
-  dropped: { step: "04", text: "Refund up front. The call is yours to ask for.", target: ".toast" },
+  tracking: { step: "Before", text: "The promise everything hangs on.", target: ".eta-pill" },
+  locked: { step: "01", text: "Everything they need, before they unlock.", target: ".notif" },
+  alert: { step: "02", text: "Already cooking, already ₹20 cheaper.", target: ".sheet .option" },
+  override: { step: "03", text: "Greyed out — already in your order.", target: ".option.disabled" },
+  resolved: { step: "04", text: "Same nine minutes. No call.", target: ".eta-pill" },
+  dropped: { step: "04", text: "Refund up front, no call needed.", target: ".toast" },
 };
 
 export default function App() {
@@ -74,14 +74,15 @@ export default function App() {
       const pop = popRef.current;
       if (pop) {
         const p = pop.getBoundingClientRect();
-        const wide = window.innerWidth > 940;
+        const device = wrap.querySelector(".device");
+        const deviceRight = device ? device.getBoundingClientRect().right - w.x : x + bw;
+        const gutter = w.width - deviceRight - 12;
         let place: string, px: number, py: number;
-        if (wide) {
+        /* Beside the artwork whenever there's room for it — including on a phone,
+           where the device is left-aligned to open a gutter. Nothing gets covered. */
+        if (gutter >= p.width) {
           place = "right";
-          // clear the whole device, not just the highlight, so it never sits on the artwork
-          const device = wrap.querySelector(".device");
-          const deviceRight = device ? device.getBoundingClientRect().right - w.x : x + bw;
-          px = Math.max(x + bw + 16, deviceRight + 18);
+          px = deviceRight + 12;
           py = y + bh / 2 - p.height / 2;
         } else if (y - p.height - 12 >= 2) {
           place = "above";
