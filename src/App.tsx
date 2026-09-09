@@ -16,60 +16,25 @@ function useTenMinuteEgg() {
   return shown;
 }
 
-/* Each moment points at the one component it is about, so the note is read
-   against the thing itself rather than beside it. */
-type Note = { step: string; title: string; body: string; target: string };
+/* One line, pinned to the component it is about. */
+type Note = { step: string; text: string; target: string };
 const NOTES: Record<Stage, Note> = {
-  tracking: {
-    step: "Before",
-    title: "The promise, on the clock.",
-    body: "Nothing has gone wrong yet. In a moment something runs out mid-cook — the part of the journey nobody has designed. Today it is a phone call.",
-    target: ".eta-pill",
-  },
-  locked: {
-    step: "01 · The alert",
-    title: "You find out before you unlock.",
-    body: "It carries the whole decision: what ran out, what the kitchen already did, the money coming back, and that the nine minutes holds. Someone who never opens the app has still been told everything. Tapping lands you straight on the swap — no home screen, no hunting.",
-    target: ".notif",
-  },
-  alert: {
-    step: "02 · The decision",
-    title: "Already cooking, already cheaper.",
-    body: "The kitchen picked the closest match and charged less than you paid — a ₹169 dish for ₹119. It decided rather than asking, because you ordered food, not a decision tree. The countdown below sits on your decision, never on your delivery.",
-    target: ".sheet .option",
-  },
-  override: {
-    step: "03 · The alternatives",
-    title: "Greyed out, because it's already yours.",
-    body: "Bhel Puri is in this order, so it can't be offered as the swap — a reviewer was talked into the same dish twice over the phone. Everything else here stays in the kitchen all day, so it can't run out on you a second time.",
-    target: ".option.disabled",
-  },
-  resolved: {
-    step: "04 · The payoff",
-    title: "The number that never moved.",
-    body: "It flashes once, to make you look at it. Their whole failure mode is the promise breaking, so the fix is proving it didn't. Better dish, money back, same nine minutes — and nobody called anybody.",
-    target: ".eta-pill",
-  },
-  dropped: {
-    step: "04 · The exit",
-    title: "Leaving is never punished.",
-    body: "Refund amount and timing stated before you ask, and the rest of the order untouched. If you want a person you ask for one — Swish doesn't call you. That call is the exact thing this flow exists to remove.",
-    target: ".toast",
-  },
+  tracking: { step: "Before", text: "Nine minutes. The promise everything else hangs on.", target: ".eta-pill" },
+  locked: { step: "01", text: "Everything they need to know, before they unlock.", target: ".notif" },
+  alert: { step: "02", text: "Already cooking, already ₹20 cheaper. It decided instead of asking.", target: ".sheet .option" },
+  override: { step: "03", text: "Greyed out — it's already in your order.", target: ".option.disabled" },
+  resolved: { step: "04", text: "Same nine minutes. Nobody had to call.", target: ".eta-pill" },
+  dropped: { step: "04", text: "Refund up front. The call is yours to ask for.", target: ".toast" },
 };
-const ORDER: Stage[] = ["tracking", "locked", "alert", "override", "resolved", "dropped"];
 
 export default function App() {
   const egg = useTenMinuteEgg();
   const [stage, setStage] = useState<Stage>("tracking");
   const wrapRef = useRef<HTMLDivElement>(null);
   const hlRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const dotRef = useRef<SVGCircleElement>(null);
-  const calloutRef = useRef<HTMLElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
   const onStage = useCallback((s: Stage) => setStage(s), []);
   const note = NOTES[stage];
-  const reached = ORDER.indexOf(stage);
 
   /* Track the target until it stops moving, then stop. A fixed timer can't know
      when a thing has settled — measuring at 360ms caught the notification card
@@ -104,17 +69,33 @@ export default function App() {
       hl.style.width = `${bw}px`;
       hl.style.height = `${bh}px`;
 
-      const anchorY = y + bh / 2;
-      const co = calloutRef.current;
-      if (co && window.innerWidth > 940) {
-        const cy = Math.max(70, Math.min(anchorY, Math.max(70, w.height - 90)));
-        co.style.top = `${cy}px`;
-        const sx = x + bw + 8, mx = x + bw + 30, ex = x + bw + 56;
-        pathRef.current?.setAttribute("d", `M ${sx} ${anchorY} H ${mx} V ${cy} H ${ex}`);
-        dotRef.current?.setAttribute("cx", `${sx}`);
-        dotRef.current?.setAttribute("cy", `${anchorY}`);
-      } else if (co) {
-        co.style.top = "";
+      /* The bubble sits beside the component on a wide screen, and above it on a
+         phone — never below, because below is where the sheet's buttons are. */
+      const pop = popRef.current;
+      if (pop) {
+        const p = pop.getBoundingClientRect();
+        const wide = window.innerWidth > 940;
+        let place: string, px: number, py: number;
+        if (wide) {
+          place = "right";
+          // clear the whole device, not just the highlight, so it never sits on the artwork
+          const device = wrap.querySelector(".device");
+          const deviceRight = device ? device.getBoundingClientRect().right - w.x : x + bw;
+          px = Math.max(x + bw + 16, deviceRight + 18);
+          py = y + bh / 2 - p.height / 2;
+        } else if (y - p.height - 12 >= 2) {
+          place = "above";
+          px = x + bw / 2 - p.width / 2;
+          py = y - p.height - 12;
+        } else {
+          place = "below";
+          px = x + bw / 2 - p.width / 2;
+          py = y + bh + 12;
+        }
+        pop.dataset.place = place;
+        pop.style.left = `${Math.max(4, Math.min(px, w.width - p.width - 4))}px`;
+        pop.style.top = `${Math.max(2, Math.min(py, w.height - p.height - 2))}px`;
+        pop.style.opacity = "1";
       }
       return `${r.x},${r.y},${r.width},${r.height}`;
     };
@@ -147,24 +128,19 @@ export default function App() {
     };
   }, [stage, note.target]);
 
-  /* On a phone the note is pinned to the bottom, so a badly placed scroll hides
-     the sheet's buttons behind it. Nudge the device so its base sits just above
-     the note — screen and note then stay visible together. */
+  /* Only scroll when the highlighted component has actually gone off screen —
+     never reposition the page under someone who can already see it. */
   useEffect(() => {
     if (window.innerWidth > 940) return;
     const t = setTimeout(() => {
-      const device = wrapRef.current?.querySelector(".device");
-      const co = calloutRef.current;
-      if (!device || !co) return;
-      const d = device.getBoundingClientRect();
-      // only if they're actually looking at the device — never yank someone reading elsewhere
-      if (d.bottom < 0 || d.top > window.innerHeight) return;
-      const delta = d.bottom - (co.getBoundingClientRect().top - 8);
-      if (Math.abs(delta) > 6) {
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollBy({ top: delta, behavior: reduce ? "auto" : "smooth" });
-      }
-    }, 420);
+      const el = wrapRef.current?.querySelector(NOTES[stage].target);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const offScreen = r.top < 90 || r.bottom > window.innerHeight - 16;
+      if (!offScreen) return;
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+    }, 450);
     return () => clearTimeout(t);
   }, [stage]);
 
@@ -186,24 +162,15 @@ export default function App() {
 
         <div className="hl" ref={hlRef} aria-hidden />
 
-        <svg className="leader" aria-hidden>
-          <path ref={pathRef} fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-          <circle ref={dotRef} r="3.5" fill="var(--accent)" />
-        </svg>
-
-        <aside className="callout" ref={calloutRef}>
+        <div className="pop" ref={popRef}>
           <motion.div key={stage}
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="callout-step">{note.step}</p>
-            <h2 className="callout-title">{note.title}</h2>
-            <p className="callout-body">{note.body}</p>
+            <span className="pop-step">{note.step}</span>
+            <p className="pop-text">{note.text}</p>
           </motion.div>
-          <div className="progress" aria-hidden>
-            {ORDER.map((s, i) => <i key={s} className={i <= reached ? "on" : ""} />)}
-          </div>
-        </aside>
+        </div>
       </section>
 
       <footer className="wrap footnote">

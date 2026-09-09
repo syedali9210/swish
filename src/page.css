@@ -48,7 +48,7 @@ blockquote.review cite {
   position: relative;
   width: max-content;
   margin: clamp(36px, 5vw, 60px) auto 0;
-  padding-right: 396px;
+  padding-right: 300px;
 }
 
 /* the outline drawn over whichever component the note is about */
@@ -65,68 +65,49 @@ blockquote.review cite {
               width 180ms var(--ease-swish), height 180ms var(--ease-swish),
               opacity 180ms linear;
 }
-.leader { position: absolute; inset: 0; z-index: 29; pointer-events: none; overflow: visible; }
-
-.callout {
+/* the bubble: one line, pinned to whatever is highlighted */
+.pop {
   position: absolute;
-  right: 0;
-  width: 340px;
-  transform: translateY(-50%);
-  border-left: 2px solid var(--accent);
-  padding-left: 20px;
+  z-index: 40;
+  opacity: 0;
+  width: max-content;
+  max-width: 250px;
+  background: #0f1412;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 9px 13px 11px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: left 180ms var(--ease-swish), top 180ms var(--ease-swish), opacity 180ms linear;
 }
-.callout-step {
-  margin: 0 0 10px;
-  font: 500 11.5px/1 var(--font);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.pop-step {
+  display: block;
+  margin-bottom: 4px;
   color: var(--accent);
+  font: 500 10px/1 var(--font);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
-.callout-title {
-  margin: 0 0 10px;
-  font: 700 clamp(18px, 2.1vw, 22px) / 1.25 var(--font);
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-wrap: balance;
-}
-.callout-body { margin: 0; color: var(--muted); font: 400 15px/1.65 var(--font); }
+.pop-text { margin: 0; color: var(--ink); font: 400 13.5px/1.45 var(--font); }
 
-.progress { display: flex; gap: 6px; margin-top: 22px; }
-.progress i {
-  width: 20px; height: 3px; border-radius: 2px;
-  background: var(--line); transition: background 260ms var(--ease-swish);
+/* the pointer */
+.pop::after {
+  content: "";
+  position: absolute;
+  width: 9px; height: 9px;
+  background: #0f1412;
+  border: 1px solid var(--accent);
+  border-top: 0; border-right: 0;
 }
-.progress i.on { background: var(--accent); }
+.pop[data-place="right"]::after { left: -5px; top: 50%; margin-top: -5px; transform: rotate(45deg); }
+.pop[data-place="above"]::after { bottom: -5px; left: 50%; margin-left: -5px; transform: rotate(-45deg); }
+.pop[data-place="below"]::after { top: -5px; left: 50%; margin-left: -5px; transform: rotate(135deg); }
 
-/* Narrow: the device is already taller than the viewport, so stacking the note
-   under it means scrolling up to tap and back down to read. Pin it instead. */
+/* Narrow: no side gutter, and the bubble floats over the artwork instead. */
 @media (max-width: 940px) {
-  .journey { padding-right: 0; display: flex; flex-direction: column; align-items: center; }
-  .leader { display: none; }
-
-  .callout {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    top: auto;
-    transform: none;
-    width: auto;
-    z-index: 40;
-    max-height: 32dvh;
-    overflow-y: auto;
-    background: rgba(11, 13, 12, 0.95);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-left: 0;
-    border-top: 2px solid var(--accent);
-    padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
-  }
-  .callout-step { margin-bottom: 7px; }
-  .callout-title { font-size: 17px; margin-bottom: 7px; }
-  .callout-body { font-size: 13.5px; line-height: 1.5; }
-  .progress { margin-top: 12px; }
-
-  /* keep the footer clear of the pinned note */
-  .page { padding-bottom: 38dvh; }
+  .journey { padding-right: 0; }
+  .pop { max-width: min(240px, calc(100vw - 40px)); }
+  .pop-text { font-size: 13px; }
 }
 
 /* ---------------- close ---------------- */
