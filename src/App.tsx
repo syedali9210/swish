@@ -49,7 +49,10 @@ export default function App() {
           “I got a call saying the kachori I ordered wasn’t available.”
           <cite>Swish · App Store review, 13 July</cite>
         </blockquote>
-        <h1 className="hero-line">Here’s the version that doesn’t.</h1>
+        <h1 className="hero-line">
+          The kitchen already put something else on the griddle.{" "}
+          <span>Forty seconds to say no.</span>
+        </h1>
       </header>
 
       <section className="journey">

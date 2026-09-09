@@ -33,11 +33,14 @@ blockquote.review cite {
 
 .hero-line {
   margin: 22px 0 0;
-  font: 700 clamp(24px, 3.6vw, 36px) / 1.15 var(--font);
+  font: 700 clamp(23px, 3.3vw, 33px) / 1.2 var(--font);
   letter-spacing: -0.03em;
   color: var(--ink);
   text-wrap: balance;
+  max-width: 560px;
 }
+/* the surprising half carries the accent */
+.hero-line span { color: var(--accent); }
 
 /* ---------------- the journey ---------------- */
 .journey {
