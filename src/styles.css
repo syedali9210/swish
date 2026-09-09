@@ -60,6 +60,10 @@ body {
      its own colour inherits the page chrome — which is near-white on black. */
   color: var(--text-primary);
 }
+/* iOS Safari's UA stylesheet gives <button> the system blue and stops it
+   inheriting colour, so unstyled text inside a button turned blue on iPhone.
+   :where() keeps specificity at zero so every explicit colour below still wins. */
+.phone :where(button) { color: inherit; }
 .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
 
 /* ---------------- header ---------------- */
