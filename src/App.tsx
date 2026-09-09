@@ -19,11 +19,11 @@ function useTenMinuteEgg() {
 /* One line per moment, shown while you're looking at the thing it's about.
    Nothing at rest — the mockup speaks first. */
 const NOTES: Partial<Record<Stage, string>> = {
-  locked: "Works even if they never open the app.",
-  alert: "A dearer dish, for less, already cooking. Forty seconds to say no.",
-  override: "These stay in the kitchen all day, so they can’t run out on you twice.",
-  resolved: "Better food, money back, and the clock never moved.",
-  dropped: "Refund stated up front — and the call is yours to ask for, not ours to make.",
+  locked: "The upgrade lands before they’ve even unlocked the phone.",
+  alert: "Good news first, cause in the next breath. Never the other way round.",
+  override: "Always in the kitchen, so it can’t run out on you twice.",
+  resolved: "Better dish, money back, clock untouched. All three, in four seconds.",
+  dropped: "Refund stated up front — and the call is theirs to ask for, not ours to make.",
 };
 
 export default function App() {
@@ -49,8 +49,8 @@ export default function App() {
           <cite>Swish · App Store review, 13 July</cite>
         </blockquote>
         <h1 className="hero-line">
-          The kitchen already started something better, and put ₹20 back.{" "}
-          <span>Forty seconds to say no.</span>
+          You didn’t get what you ordered.{" "}
+          <span>You got something better, and ₹20 back.</span>
         </h1>
       </header>
 

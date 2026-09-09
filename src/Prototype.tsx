@@ -60,7 +60,7 @@ const Ribbon = () => (
     <span className="bolt" aria-hidden>ϟ</span>
     <div>
       <div className="val t-h3">9 minutes</div>
-      <div className="sub t-caption">Unchanged. Your food is still on time.</div>
+      <div className="sub t-caption">Still on time. None of this cost you a minute.</div>
     </div>
   </div>
 );
@@ -154,10 +154,10 @@ function LockScreen({ onOpen, T, reduce }: { onOpen: () => void; T: (d: number, 
           <span className="name t-micro">Swish</span>
           <span className="when t-caption">now</span>
         </span>
-        <span className="notif-title t-title">The {LOST.name} just ran out</span>
+        <span className="notif-title t-title">You’ve been upgraded to {BUTTER_CORN.name}</span>
         <span className="notif-body t-body">
-          We’ve put {BUTTER_CORN.name} on instead — a ₹{BUTTER_CORN.list} dish, yours for ₹{BUTTER_CORN.yours}.
-          Same 9 minutes. Tap to change it.
+          The {LOST.name} ran out, so we’ve put a ₹{BUTTER_CORN.list} dish on and sent
+          ₹{backTo(BUTTER_CORN)} back. Still 9 minutes. Tap if you’d rather have something else.
         </span>
       </motion.button>
 
@@ -304,20 +304,22 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                       transition={T(D.nav)}
                     >
                       <div className="copy">
-                        <h2 className="t-h2">The {LOST.name} just ran out.</h2>
+                        {/* upgrade first so it lands as good news, cause in the very next
+                            breath so it never reads as hiding what went wrong */}
+                        <h2 className="t-h2">You’ve been upgraded to {BUTTER_CORN.name}.</h2>
                         <p className="t-body">
-                          We’ve put {BUTTER_CORN.name} on the griddle instead — a ₹{BUTTER_CORN.list} dish,
-                          yours for ₹{BUTTER_CORN.yours}. The ₹{backTo(BUTTER_CORN)} difference is already
-                          heading back to your card.
+                          The {LOST.name} ran out — so the kitchen’s put a ₹{BUTTER_CORN.list} dish on
+                          the griddle, charged you ₹{backTo(BUTTER_CORN)} less, and your nine minutes
+                          hasn’t moved.
                         </p>
                       </div>
                       <OptionRow item={BUTTER_CORN} selected />
                       <Countdown from={barFrom} liveRef={remainingRef} onExpire={() => swap(BUTTER_CORN)} />
                       <div className="actions">
-                        <button className="btn btn-primary t-title" onClick={() => swap(BUTTER_CORN)}>Keep it</button>
+                        <button className="btn btn-primary t-title" onClick={() => swap(BUTTER_CORN)}>Keep the upgrade</button>
                         <button className="btn btn-secondary t-label" onClick={() => setPhase("override")}>Pick something else</button>
                         <button className="btn btn-ghost t-label" onClick={() => settle({ kind: "refund" })}>
-                          Just drop it &amp; refund ₹{LOST.paid}
+                          No thanks — refund ₹{LOST.paid}
                         </button>
                       </div>
                     </motion.div>
@@ -327,10 +329,10 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                       transition={T(D.nav)}
                     >
                       <div className="copy">
-                        <h2 className="t-h2">Pick something else</h2>
+                        <h2 className="t-h2">Pick your upgrade.</h2>
                         <p className="t-body">
-                          We keep these on all day, so they can’t run out on you twice. Both cost less than
-                          what you’ve already paid.
+                          These stay in our kitchen all day, so they can’t run out on you. Every one of
+                          them costs less than you’ve already paid.
                         </p>
                       </div>
                       <div className="options">
@@ -344,12 +346,12 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                         ))}
                       </div>
                       <div className="t-caption note">
-                        ₹{backTo(chosen)} goes back to the card you paid with
+                        ₹{backTo(chosen)} back to the card you paid with
                       </div>
                       <div className="actions">
-                        <button className="btn btn-primary t-title" onClick={() => swap(chosen)}>Confirm {chosen.name}</button>
+                        <button className="btn btn-primary t-title" onClick={() => swap(chosen)}>Upgrade to {chosen.name}</button>
                         <button className="btn btn-ghost t-label" onClick={() => settle({ kind: "refund" })}>
-                          Just drop it &amp; refund ₹{LOST.paid}
+                          No thanks — refund ₹{LOST.paid}
                         </button>
                       </div>
                     </motion.div>
@@ -369,7 +371,7 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                 <div className="toast-copy">
                   <div className="title-row">
                     <span className="wipe t-title">
-                      {resolution.kind === "swap" ? `${resolution.item.name} is on the griddle` : `${LOST.name} dropped`}
+                      {resolution.kind === "swap" ? `Upgraded to ${resolution.item.name}` : "Dropped, and refunded"}
                       {!reduce && (
                         <motion.span className="sweep"
                           initial={{ x: "-140%" }} animate={{ x: "260%" }}
@@ -382,8 +384,8 @@ export default function Prototype({ onStage }: { onStage?: (s: Stage) => void })
                   </div>
                   <div className="sub t-caption">
                     {resolution.kind === "swap"
-                      ? `A ₹${resolution.item.list} dish for ₹${resolution.item.yours} · ₹${backTo(resolution.item)} back to your card`
-                      : `₹${LOST.paid} back to your card in 3–5 days · the rest still comes in 9 minutes`}
+                      ? `A ₹${resolution.item.list} dish for ₹${resolution.item.yours} · ₹${backTo(resolution.item)} already on its way back`
+                      : `₹${LOST.paid} back to your card in 3–5 days. The rest still lands in 9 minutes.`}
                   </div>
                   {/* the call is the customer's to ask for, never ours to impose */}
                   {resolution.kind === "refund" && (

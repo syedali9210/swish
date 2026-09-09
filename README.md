@@ -59,11 +59,12 @@ Everything else follows from that:
 - **It can't happen twice.** The July reviewer was called three times — the substitute they agreed
   to also ran out. So swaps only ever come from a small set the kitchen keeps on all day. The
   cascade isn't handled gracefully, it's designed out.
-- **The swap is an upgrade, shown rather than announced.** Everything in that set normally sells
-  for more than what you paid, and you get it for less — a ₹169 dish for ₹119, with ₹20 going back
-  to your card. The app never says "you've been upgraded"; it shows the struck price and the
-  refund and lets you draw the conclusion. Being told you've been upgraded when you didn't ask is
-  the tone that writes one-star reviews.
+- **It reads as an upgrade, because it is one.** Everything in that set normally sells for more
+  than you paid and costs you less — a ₹169 dish for ₹119, with ₹20 going back. The copy leads
+  with that ("You've been upgraded to Butter Corn") and puts the cause in the very next breath
+  ("The Peri Peri Corn ran out — so the kitchen's put a ₹169 dish on the griddle, charged you ₹20
+  less, and your nine minutes hasn't moved"). Good news first, never instead of — one sentence
+  carrying all three gains: better dish, money back, clock untouched.
 - **Dropping states the refund, and the call is yours to ask for.** Amount and timing up front,
   the rest of the order unaffected, and a "Something wrong? Ask us to call" the customer triggers.
   Calling them automatically would reinstate the exact thing this whole piece argues against.
@@ -73,7 +74,8 @@ Everything else follows from that:
   customer can see the system knows.
 - **"Just drop it and refund" is always one tap and never buried.** The review's whole problem
   was three calls to reach an outcome the customer would have picked in four seconds.
-- **Kitchen voice.** "The Peri Peri Corn just ran out," never "We regret to inform you."
+- **Kitchen voice.** "The Peri Peri Corn ran out — so the kitchen's put a ₹169 dish on the
+  griddle," never "We regret to inform you that an item is unavailable."
 - **Money is never a surprise.** Every option carries its delta, and the line above the button
   states the effect on the total before you commit.
 
