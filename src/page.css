@@ -45,34 +45,42 @@ blockquote.review cite {
 /* ---------------- the journey ---------------- */
 .journey {
   margin: clamp(36px, 5vw, 60px) auto 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: max-content minmax(280px, 360px);
+  justify-content: center;
+  gap: clamp(28px, 4vw, 56px);
+  align-items: start;
+}
+@media (max-width: 940px) {
+  .journey { grid-template-columns: 1fr; justify-items: center; gap: 26px; }
+  .rail { max-width: 480px; position: static; }
 }
 
-/* One line, arriving when you act, then out of the way. Fixed height so
-   the phone never shifts underneath you. */
-.snip-slot {
-  min-height: 52px;
-  margin-top: 14px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 0 16px;
+/* the device is taller than most viewports, so the note follows you down it */
+.rail { position: sticky; top: 18vh; }
+.rail-inner { border-left: 2px solid var(--accent); padding-left: 20px; }
+.rail-step {
+  margin: 0 0 10px;
+  font: 500 11.5px/1 var(--font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
-.snip {
-  margin: 0;
-  display: inline-flex;
-  gap: 10px;
-  max-width: 400px;
-  color: var(--muted);
-  font: 400 14px/1.5 var(--font);
-  text-align: left;
+.rail-title {
+  margin: 0 0 10px;
+  font: 700 clamp(18px, 2.1vw, 22px) / 1.25 var(--font);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-wrap: balance;
 }
-.snip i {
-  width: 5px; height: 5px; margin-top: 7px;
-  border-radius: 50%; background: var(--accent); flex: 0 0 auto;
+.rail-body { margin: 0; color: var(--muted); font: 400 15px/1.65 var(--font); }
+
+.progress { display: flex; gap: 6px; margin-top: 24px; }
+.progress i {
+  width: 20px; height: 3px; border-radius: 2px;
+  background: var(--line); transition: background 260ms var(--ease-swish);
 }
+.progress i.on { background: var(--accent); }
 
 /* ---------------- close ---------------- */
 .footnote { margin-top: clamp(44px, 7vw, 76px); }

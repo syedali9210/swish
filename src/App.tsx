@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import Prototype, { type Stage } from "./Prototype";
 import "./page.css";
 
@@ -16,30 +16,49 @@ function useTenMinuteEgg() {
   return shown;
 }
 
-/* One line per moment, shown while you're looking at the thing it's about.
-   Nothing at rest — the mockup speaks first. */
-const NOTES: Partial<Record<Stage, string>> = {
-  locked: "The upgrade lands before they’ve even unlocked the phone.",
-  alert: "Good news first, cause in the next breath. Never the other way round.",
-  override: "Always in the kitchen, so it can’t run out on you twice.",
-  resolved: "Better dish, money back, clock untouched — and no one had to call.",
-  dropped: "Refund stated up front — and the call is theirs to ask for, not ours to make.",
+/* Annotation for whatever you're looking at: what the screen says, what happens
+   when you act on it, and why it's built that way. */
+type Note = { step: string; title: string; body: string };
+const NOTES: Record<Stage, Note> = {
+  tracking: {
+    step: "Before",
+    title: "Order placed, kitchen cooking.",
+    body: "Nothing has gone wrong yet. In a moment something runs out mid-cook — and that is the part of the journey nobody has designed. Today it is a phone call.",
+  },
+  locked: {
+    step: "01 · The alert",
+    title: "You find out before you unlock.",
+    body: "The notification carries the whole decision: what ran out, what the kitchen has already done about it, the money coming back, and that the nine minutes still holds. Someone who never opens the app has still been told everything that matters. Tap it and you land straight on the swap — no home screen, no menu, no hunting.",
+  },
+  alert: {
+    step: "02 · The decision",
+    title: "The kitchen decided. You get to disagree.",
+    body: "It is already cooking the closest match, and charging less than you paid. The countdown sits on your decision, never on your delivery — leave it and it simply confirms, because you ordered food, not a decision tree. Three ways out, all one tap.",
+  },
+  override: {
+    step: "03 · The alternatives",
+    title: "Everything here is always in stock.",
+    body: "Swaps only ever come from dishes the kitchen keeps on all day, so the thing that happened to one reviewer three times in a row cannot happen here. Bhel Puri sits greyed out because it is already in this order — another reviewer was talked into the same dish twice over the phone.",
+  },
+  resolved: {
+    step: "04 · The payoff",
+    title: "Better dish, money back, clock untouched.",
+    body: "The arrival time flashes once, to make you look at it. Their whole failure mode is the promise breaking, so the fix is proving it did not. Seconds, in the app, with nobody calling anybody.",
+  },
+  dropped: {
+    step: "04 · The exit",
+    title: "Leaving is never punished.",
+    body: "The refund amount and the timing are stated before you ask, and the rest of the order is untouched. If you want a person, you ask for one — Swish does not call you. That call is the exact thing this flow exists to remove.",
+  },
 };
+const ORDER: Stage[] = ["tracking", "locked", "alert", "override", "resolved", "dropped"];
 
 export default function App() {
   const egg = useTenMinuteEgg();
   const [stage, setStage] = useState<Stage>("tracking");
-  const [shown, setShown] = useState(false);
   const onStage = useCallback((s: Stage) => setStage(s), []);
   const note = NOTES[stage];
-
-  // arrives with the moment, then gets out of the way
-  useEffect(() => {
-    if (!NOTES[stage]) { setShown(false); return; }
-    setShown(true);
-    const t = setTimeout(() => setShown(false), 6500);
-    return () => clearTimeout(t);
-  }, [stage]);
+  const reached = ORDER.indexOf(stage);
 
   return (
     <main className="page">
@@ -57,20 +76,22 @@ export default function App() {
       <section className="journey">
         <Prototype onStage={onStage} />
 
-        <div className="snip-slot">
-          <AnimatePresence mode="wait" initial={false}>
-            {shown && note && (
-              <motion.p className="snip" key={stage}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <i aria-hidden /> {note}
-              </motion.p>
-            )}
-          </AnimatePresence>
-        </div>
+        <aside className="rail">
+          <div className="rail-inner">
+            {/* keyed remount rather than AnimatePresence — no exit to get stuck on */}
+            <motion.div key={stage}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <p className="rail-step">{note.step}</p>
+              <h2 className="rail-title">{note.title}</h2>
+              <p className="rail-body">{note.body}</p>
+            </motion.div>
+            <div className="progress" aria-hidden>
+              {ORDER.map((s, i) => <i key={s} className={i <= reached ? "on" : ""} />)}
+            </div>
+          </div>
+        </aside>
       </section>
 
       <footer className="wrap footnote">
