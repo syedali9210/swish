@@ -149,8 +149,11 @@ function LockScreen({ onOpen, T, reduce }: { onOpen: () => void; T: (d: number, 
         transition={T(D.screen, 0.35)}
       >
         <span className="notif-top">
-          {/* their real app icon: green square, white four-point sparkle */}
-          <span className="notif-icon" aria-hidden>✦</span>
+          {/* their real app icon: green square, white sparkle beside the wordmark */}
+          <span className="notif-icon" aria-hidden>
+            <span className="spark">✦</span>
+            <span className="wordmark">swish</span>
+          </span>
           <span className="name t-micro">Swish</span>
           <span className="when t-caption">now</span>
         </span>

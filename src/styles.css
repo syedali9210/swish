@@ -295,14 +295,25 @@ body {
 }
 .notif:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 .notif-top { display: flex; align-items: center; gap: calc(12px * var(--s)); }
-/* matches the real app icon — green square, white sparkle, subtle top-left lift */
+/* the real app icon, rebuilt: green square, white sparkle beside the wordmark */
 .notif-icon {
-  width: calc(44px * var(--s)); height: calc(44px * var(--s));
-  border-radius: calc(13px * var(--s));
+  width: calc(54px * var(--s)); height: calc(54px * var(--s));
+  border-radius: calc(15px * var(--s));
   background: linear-gradient(148deg, #3fcb6c 0%, #23b15b 100%);
   color: #fff;
-  display: grid; place-items: center; flex: 0 0 auto;
-  font: 400 calc(22px * var(--s)) / 1 var(--font);
+  flex: 0 0 auto; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  gap: calc(1.5px * var(--s));
+}
+.notif-icon .spark {
+  font-size: calc(9px * var(--s));
+  line-height: 1;
+  align-self: flex-start;
+  margin-top: calc(15px * var(--s));
+}
+.notif-icon .wordmark {
+  font: 700 calc(14px * var(--s)) / 1 var(--font);
+  letter-spacing: -0.045em;
 }
 .notif .name { color: var(--text-secondary); flex: 1; text-transform: uppercase; }
 .notif .when { color: var(--text-tertiary); }
