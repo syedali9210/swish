@@ -147,6 +147,27 @@ export default function App() {
     };
   }, [stage, note.target]);
 
+  /* On a phone the note is pinned to the bottom, so a badly placed scroll hides
+     the sheet's buttons behind it. Nudge the device so its base sits just above
+     the note — screen and note then stay visible together. */
+  useEffect(() => {
+    if (window.innerWidth > 940) return;
+    const t = setTimeout(() => {
+      const device = wrapRef.current?.querySelector(".device");
+      const co = calloutRef.current;
+      if (!device || !co) return;
+      const d = device.getBoundingClientRect();
+      // only if they're actually looking at the device — never yank someone reading elsewhere
+      if (d.bottom < 0 || d.top > window.innerHeight) return;
+      const delta = d.bottom - (co.getBoundingClientRect().top - 8);
+      if (Math.abs(delta) > 6) {
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollBy({ top: delta, behavior: reduce ? "auto" : "smooth" });
+      }
+    }, 420);
+    return () => clearTimeout(t);
+  }, [stage]);
+
   return (
     <main className="page">
       <header className="wrap">
